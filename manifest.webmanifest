@@ -1,0 +1,13 @@
+{
+  "name": "Bible",
+  "short_name": "Bible",
+  "description": "Read, search, highlight and study the Bible — works offline.",
+  "start_url": "./#/today",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf8f3",
+  "theme_color": "#6b4f2a",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
