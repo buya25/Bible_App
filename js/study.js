@@ -5,6 +5,7 @@ import { loadTranslationList, loadTranslation, loadOriginal, loadVariants, loadL
 import { decodeMorph } from './morph.js';
 import { escapeHtml, readHref } from './util.js';
 import { renderNamesHome, namesForStrong, nameHref, typeLabel } from './names.js';
+import { loadCrossRefs, crossRefListHtml, bindMoreButtons } from './crossrefs.js';
 
 const STATUS = {
   1: { cls: 'w-other', label: 'Found in other ancient sources (e.g. Septuagint or Dead Sea Scrolls), not in the standard Hebrew text' },
@@ -175,11 +176,12 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
     })
     .filter((v) => v > 0)
     .slice(0, 30);
-  const [list, original] = await Promise.all([loadTranslationList(), loadOriginal(book)]);
+  const [list, original, xrefs] = await Promise.all([loadTranslationList(), loadOriginal(book), loadCrossRefs(book).catch(() => [])]);
   const translations = await Promise.all(list.map((t) => loadTranslation(t.id)));
   const ref = formatReference(book, chapter, verses);
   document.title = `${ref} — Study`;
   const lang = original.lang;
+  const currentBible = translations[Math.max(0, list.findIndex((t) => t.id === currentId))];
   const namesIn = async (words) => {
     const seen = new Map();
     for (const w of words) for (const r of await namesForStrong(w[3]).catch(() => [])) seen.set(r[0], r);
@@ -202,6 +204,8 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
           <div class="row"><h2 style="margin:0">${formatReference(book, chapter, [v])}</h2><span class="spacer"></span><a class="btn btn-small" href="${readHref(book, chapter, v)}">Read in context</a></div>
           <h3>Compare translations</h3>
           <div class="compare">${compare}</div>
+          <h3>Related verses</h3>
+          ${crossRefListHtml(currentBible, xrefs[chapter - 1]?.[v - 1] || [], 6)}
           <h3>Original ${lang === 'hbo' ? 'Hebrew' : 'Greek'}</h3>
           <p class="original-line" ${lang === 'hbo' ? 'dir="rtl" lang="he"' : 'lang="grc"'}>${o.w.map((w) => `<span class="${STATUS[w[5]]?.cls || ''}">${escapeHtml(w[0])}</span>`).join(' ')}</p>
           ${interlinearHtml(o.w, lang)}
@@ -217,6 +221,7 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
     <h1>${escapeHtml(ref)}</h1>
     ${sections}
     <p class="small muted"><a href="#/study/about">Why do translations and manuscripts differ?</a></p>`;
+  bindMoreButtons(main, currentBible, (btn) => xrefs[chapter - 1][Number(btn.closest('[data-verse]').dataset.verse) - 1]);
   wordContext.lookup = (btn) => {
     const v = Number(btn.closest('[data-verse]').dataset.verse);
     return { word: original.chapters[chapter - 1][v - 1].w[Number(btn.dataset.word)], lang };
@@ -354,5 +359,6 @@ const ABOUT_HTML = `
   <div class="card prose small">
     <h2 style="margin-top:0">Sources</h2>
     <p>Hebrew and Greek texts, glosses, grammar, manuscript data, lexicons and the people & places dictionary come from <a href="https://github.com/STEPBible/STEPBible-Data" target="_blank" rel="noopener">STEPBible.org</a> (Tyndale House, Cambridge), licensed CC BY 4.0. They are reformatted for this app. English glosses are based on the Berean Study Bible. STEPBible adapted the people & places summaries from AI-generated text.</p>
+    <p>Cross references come from <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY), ranked by reader votes.</p>
     <p>Map locations come from <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> via STEPBible. Many ancient sites are uncertain. Translations are in the public domain.</p>
   </div>`;

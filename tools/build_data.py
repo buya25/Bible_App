@@ -4,6 +4,7 @@
 Usage: python3 tools/build_data.py <sources-dir>
 
 <sources-dir> must contain:
+  bible_databases/sources/extras/cross_references.txt   OpenBible.info cross references (CC BY), via scrollmapper
   thiagobodruk/en_kjv.json                              github.com/thiagobodruk/bible (keeps "LORD" small caps)
   bible_databases/formats/json/{BSB,YLT,ASV}.json       github.com/scrollmapper/bible_databases
   open-bibles/eng-web.usfx.xml                          github.com/seven1m/open-bibles
@@ -17,6 +18,7 @@ Outputs (all under data/):
   variants.json            verses where the Greek/Hebrew manuscript traditions differ
   names/<letter>.json      people, places and other named things (STEPBible TIPNR)
   names/index.json         compact search index for people & places
+  crossrefs/<book>.json    related verses for each verse, strongest first (OpenBible.info)
 
 STEPBible data is reformatted (not reworded): fields are selected, HTML is reduced to
 <b>/<i>/<br> and verse links, and references are mapped to KJV versification.
@@ -495,6 +497,51 @@ def build_names(kjv):
     print(f'  names: {len(entries)} entries {dict(kinds)}, {sum(1 for e in entries.values() if "geo" in e)} with map location')
 
 
+# ---------------------------------------------------------------- cross references
+
+OSIS_CODES = ('Gen Exod Lev Num Deut Josh Judg Ruth 1Sam 2Sam 1Kgs 2Kgs 1Chr 2Chr Ezra Neh Esth Job Ps Prov Eccl Song '
+              'Isa Jer Lam Ezek Dan Hos Joel Amos Obad Jonah Mic Nah Hab Zeph Hag Zech Mal Matt Mark Luke John Acts Rom '
+              '1Cor 2Cor Gal Eph Phil Col 1Thess 2Thess 1Tim 2Tim Titus Phlm Heb Jas 1Pet 2Pet 1John 2John 3John Jude Rev').split()
+OSIS_BOOK = {c: i for i, c in enumerate(OSIS_CODES)}
+
+
+def osis_ref(ref, kjv):
+    m = re.match(r'^(\w+)\.(\d+)\.(\d+)$', ref)
+    if not m or m.group(1) not in OSIS_BOOK:
+        return None
+    b, c, v = OSIS_BOOK[m.group(1)], int(m.group(2)), int(m.group(3))
+    if c > len(kjv[b]) or not 1 <= v <= len(kjv[b][c - 1]):
+        return None
+    return b * 1000000 + c * 1000 + v
+
+
+def build_crossrefs(kjv):
+    """Each verse gets a list of targets: a packed ref, or [start, end] for a passage. Sorted by votes."""
+    path = os.path.join(SRC, 'bible_databases/sources/extras/cross_references.txt')
+    refs = [[[[] for _ in ch] for ch in book] for book in kjv]
+    kept = dropped = 0
+    with open(path, encoding='utf-8') as f:
+        next(f)  # header
+        for line in f:
+            cols = line.rstrip('\n').split('\t')
+            if len(cols) < 3:
+                continue
+            votes = int(cols[2] or 0)
+            src = osis_ref(cols[0], kjv)
+            start, _, end = cols[1].partition('-')
+            target, target_end = osis_ref(start, kjv), osis_ref(end, kjv) if end else None
+            if votes <= 0 or src is None or target is None or (end and (target_end is None or target_end <= target)):
+                dropped += 1
+                continue
+            b, c, v = src // 1000000, src // 1000 % 1000, src % 1000
+            refs[b][c - 1][v - 1].append((votes, [target, target_end] if target_end else target))
+            kept += 1
+    for b, book in enumerate(refs):
+        chapters = [[[t for _, t in sorted(verse, key=lambda x: -x[0])] for verse in ch] for ch in book]
+        write_json(f'crossrefs/{b}.json', chapters)
+    print(f'  cross references: {kept} kept, {dropped} dropped (no votes or outside KJV numbering)')
+
+
 if __name__ == '__main__':
     print('translations')
     kjv, meta = build_translations()
@@ -505,6 +552,8 @@ if __name__ == '__main__':
     build_lexicon(usage)
     print('people & places')
     build_names(kjv)
+    print('cross references')
+    build_crossrefs(kjv)
     files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json'), recursive=True)
                    if not p.endswith('manifest.json'))
     write_json('manifest.json', files)

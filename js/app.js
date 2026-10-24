@@ -4,6 +4,7 @@ import { verseOfTheDay } from './votd.js';
 import { store } from './store.js';
 import { escapeHtml, readHref, toast } from './util.js';
 import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
+import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
 import { interlinearHtml, interlinearLegend, openWordDialog, renderWordPage, renderVersePage, renderStudyHome, studyVerseHref, wordContext } from './study.js';
 
@@ -59,6 +60,7 @@ function openSettings() {
         <div class="field"><label for="sr">Read-aloud speed: ${s.speechRate}×</label><input id="sr" type="range" min="0.5" max="2" step="0.1" value="${s.speechRate}" data-range="speechRate"></div>
         <div class="field switch"><label for="vn">Show verse numbers</label><input id="vn" type="checkbox" data-check="verseNumbers" ${s.verseNumbers ? 'checked' : ''}></div>
         <div class="field switch"><label for="pm">Paragraph layout (verses flow together)</label><input id="pm" type="checkbox" data-check="paragraphMode" ${s.paragraphMode ? 'checked' : ''}></div>
+        <div class="field switch"><label for="xr">Show related verses under each verse</label><input id="xr" type="checkbox" data-check="crossRefs" ${s.crossRefs ? 'checked' : ''}></div>
         <div class="field"><span class="label">Your data</span>
           <p class="muted small">Highlights, notes, bookmarks and plan progress are stored only on this device. Export a backup to move them to another device.</p>
           <div class="row"><button class="btn btn-small" data-export>Export backup</button><label class="btn btn-small">Import backup<input type="file" accept="application/json" data-import hidden></label></div>
@@ -90,7 +92,7 @@ function openSettings() {
     if (check) store.update((st) => (st.settings[check] = e.target.checked));
     applySettings();
     if (range) e.target.previousElementSibling.textContent = e.target.previousElementSibling.textContent.replace(/:.*/, `: ${e.target.value}${range === 'fontSize' ? 'px' : range === 'speechRate' ? '×' : ''}`);
-    if (check === 'paragraphMode' && route().view === 'read') renderReader();
+    if ((check === 'paragraphMode' || check === 'crossRefs') && route().view === 'read') renderReader();
   };
   dialog.onchange = async (e) => {
     if (!e.target.hasAttribute('data-import')) return;
@@ -251,7 +253,7 @@ function renderToday() {
       <div class="card-label">Verse of the day · ${translation().abbr}</div>
       <p class="votd-text">${escapeHtml(votdText)}</p>
       <div class="row"><a href="${readHref(ref.book, ref.chapter, ref.verse)}"><strong>${formatReference(ref.book, ref.chapter, verses)}</strong></a><span class="spacer"></span>
-        <button class="btn btn-small" id="votd-share">Share</button></div>
+        <button class="btn btn-small" id="votd-related">Related verses</button><button class="btn btn-small" id="votd-share">Share</button></div>
     </section>
     ${last ? `<section class="card"><div class="card-label">Continue reading</div>
       <div class="row"><strong style="font-size:18px">${formatReference(last.book, last.chapter)}</strong><span class="spacer"></span><a class="btn btn-primary" href="${readHref(last.book, last.chapter)}">Continue</a></div></section>`
@@ -263,6 +265,7 @@ function renderToday() {
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
     </div>`;
+  document.getElementById('votd-related').onclick = () => openCrossRefsDialog(dialog, bible, ref.book, ref.chapter, [ref.verse], translation().abbr);
   document.getElementById('votd-share').onclick = () => shareText(`“${votdText}”\n— ${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})`);
 }
 
@@ -363,6 +366,17 @@ function renderReader() {
     renderReader();
   };
 
+  if (!original && st.settings.crossRefs) {
+    loadCrossRefs(book)
+      .then((data) => {
+        if (current.book !== book || current.chapter !== chapter || route().view !== 'read') return;
+        main.querySelectorAll('.passage .verse[data-v]').forEach((el) => {
+          el.insertAdjacentHTML('beforeend', inlineCrossRefsHtml(data[chapter - 1]?.[Number(el.dataset.v) - 1] || []));
+        });
+      })
+      .catch(() => {});
+  }
+
   if (original) {
     return loadOriginal(book)
       .then((data) => {
@@ -415,6 +429,12 @@ main.addEventListener('keydown', (e) => {
     e.preventDefault();
     toggleVerse(Number(verse.dataset.v));
   }
+});
+
+// "+N" after the inline related verses opens the full list for that verse.
+main.addEventListener('click', (e) => {
+  const more = e.target.closest('[data-xref-more]');
+  if (more) openCrossRefsDialog(dialog, bible, current.book, current.chapter, [Number(more.closest('.verse').dataset.v)], translation().abbr);
 });
 
 // Tapping a Hebrew/Greek word (reader in Original mode, or a study page) opens its word study.
@@ -489,6 +509,10 @@ actionBar.addEventListener('click', async (e) => {
     }
     case 'note':
       openNote(verses);
+      break;
+    case 'xrefs':
+      openCrossRefsDialog(dialog, bible, current.book, current.chapter, verses, translation().abbr);
+      clearSelection();
       break;
     case 'study':
       location.hash = studyVerseHref(current.book, current.chapter, formatReference(current.book, current.chapter, verses).split(':')[1].replace(/\s/g, ''));
