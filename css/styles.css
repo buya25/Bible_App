@@ -376,6 +376,20 @@ select.picker-filter { appearance: auto; }
 .tl-name a:hover { color: var(--accent); }
 @media (max-width: 560px) { .tl-item { grid-template-columns: 1fr; gap: 0; } }
 
+/* Memory verses, prayers, verse images */
+.practice-ref { margin: 4px 0 12px; font-size: 24px; }
+.hidden-text { filter: blur(7px); user-select: none; }
+.letters { letter-spacing: .06em; }
+.grade { margin-top: 12px; }
+mark.missed { background: none; color: var(--w-kjv); text-decoration: underline wavy; }
+.memory-item .link-btn { justify-self: start; }
+.prayer-title { font-size: 17px; }
+.answered { color: #2e7d4f; font-weight: 600; margin: 10px 0 0; }
+:root[data-theme='dark'] .answered { color: #7fd09f; }
+.prayer-actions { margin-top: 10px; gap: 14px; }
+.verse-canvas { width: 100%; max-width: 480px; aspect-ratio: 1; display: block; margin: 0 auto 12px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.theme-choice { flex-wrap: wrap; }
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;

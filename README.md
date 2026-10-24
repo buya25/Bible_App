@@ -25,7 +25,11 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Read aloud:** text-to-speech highlights each verse as it is read, with adjustable speed.
 - **Reading plans:** whole Bible in a year, New Testament in 90 days, Gospels in 30 days, Psalms & Proverbs, Old Testament in a year. Daily readings are balanced by verse count.
 - **Today screen:** verse of the day, continue where you left off, today's plan reading and your reading streak.
-- **Library:** all your highlights, bookmarks, notes and reading history in one place.
+- **Memory verses:** select verses and tap **Memorize**. Spaced repetition brings each verse back after 1, 2, 4, 7, 14, 30, 60 and then 120 days. Practice by recalling, with first-letter hints, or by typing the verse, which is checked word by word.
+- **Prayer journal:** add prayers (optionally linked to verses, e.g. from **Pray** in the reader), mark them answered with a note, and look back on answered prayers.
+- **Verse images:** turn any verse, or the verse of the day, into a square picture in five styles to download or share.
+- **Daily reminders:** a notification after your chosen time if you haven't read yet (and in the background on supported installed apps), plus **Add to calendar** for a daily reminder on any device.
+- **Library:** all your highlights, bookmarks, notes, memory verses, prayers and reading history in one place.
 - **Comfort settings:** light, sepia and dark themes (or follow the system), serif or sans font, text size and line spacing.
 - **Private by design:** your data stays in your browser. Export and import a backup file to move it between devices.
 - **Works offline:** your current translation is cached on the device after the first visit. **Settings → Download everything** caches all translations, the original texts and the dictionary.
@@ -68,6 +72,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/commentary.js` | Commentaries: loading (gzip), section lookup, dialog and panel |
 | `js/topics.js` | Topical index and Bible dictionary: search, browse and pages |
 | `js/maps.js`, `js/timeline.js` | Maps of places; timeline of events and reigns |
+| `js/memory.js`, `js/prayers.js`, `js/verse-image.js`, `js/reminders.js` | Memory verses, prayer journal, verse images, reminders |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |

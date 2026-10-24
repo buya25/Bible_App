@@ -6,6 +6,10 @@ import { escapeHtml, readHref, toast } from './util.js';
 import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
 import { openCommentaryDialog } from './commentary.js';
 import { loadChapterPlaces } from './maps.js';
+import { newItem, memoryKey, renderMemoryList, renderPractice, dueItems } from './memory.js';
+import { openPrayerDialog, renderPrayers } from './prayers.js';
+import { openImageDialog } from './verse-image.js';
+import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -68,6 +72,11 @@ function openSettings() {
         <div class="field switch"><label for="vn">Show verse numbers</label><input id="vn" type="checkbox" data-check="verseNumbers" ${s.verseNumbers ? 'checked' : ''}></div>
         <div class="field switch"><label for="pm">Paragraph layout (verses flow together)</label><input id="pm" type="checkbox" data-check="paragraphMode" ${s.paragraphMode ? 'checked' : ''}></div>
         <div class="field switch"><label for="xr">Show related verses under each verse</label><input id="xr" type="checkbox" data-check="crossRefs" ${s.crossRefs ? 'checked' : ''}></div>
+        <div class="field"><span class="label">Daily reminder</span>
+          <div class="switch"><label for="rm">Remind me to read each day at</label><input id="rm" type="checkbox" data-reminder ${s.reminder ? 'checked' : ''}></div>
+          <div class="row" style="margin-top:8px"><input type="time" class="picker-filter" style="width:auto;margin:0" value="${s.reminderTime}" data-time aria-label="Reminder time"><button class="btn btn-small" data-ics>Add to calendar</button></div>
+          <p class="muted small">Notifications appear when you open the app after this time (and in the background on some installed apps). A calendar reminder works on every device.</p>
+        </div>
         <div class="field"><span class="label">Your data</span>
           <p class="muted small">Highlights, notes, bookmarks and plan progress are stored only on this device. Export a backup to move them to another device.</p>
           <div class="row"><button class="btn btn-small" data-export>Export backup</button><label class="btn btn-small">Import backup<input type="file" accept="application/json" data-import hidden></label></div>
@@ -90,10 +99,16 @@ function openSettings() {
     }
     if (t?.hasAttribute('data-export')) exportBackup();
     if (t?.hasAttribute('data-download')) downloadEverything(t);
+    if (t?.hasAttribute('data-ics')) downloadIcs(store.get().settings.reminderTime);
     if (e.target.closest('a[data-close]')) dialog.close();
   };
   dialog.oninput = (e) => {
     if (e.target.dataset.select === 'translation') return switchTranslation(e.target.value);
+    if (e.target.hasAttribute('data-time')) return store.update((st) => (st.settings.reminderTime = e.target.value || '07:00'));
+    if (e.target.hasAttribute('data-reminder')) {
+      if (!e.target.checked) return store.update((st) => (st.settings.reminder = false));
+      return enableReminders(store).then((ok) => (e.target.checked = ok));
+    }
     const { range, check } = e.target.dataset;
     if (range) store.update((st) => (st.settings[range] = Number(e.target.value)));
     if (check) store.update((st) => (st.settings[check] = e.target.checked));
@@ -213,7 +228,7 @@ function router() {
     main.innerHTML = '<div class="loading">Loading the Bible…</div>';
     return;
   }
-  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), plans: renderPlans, library: () => renderLibrary(parts[0]) };
+  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), memorize: () => renderPractice(main, store), plans: renderPlans, library: () => renderLibrary(parts[0]) };
   (views[view] || renderToday)();
 }
 
@@ -274,20 +289,34 @@ function renderToday() {
       <div class="card-label">Verse of the day · ${translation().abbr}</div>
       <p class="votd-text">${escapeHtml(votdText)}</p>
       <div class="row"><a href="${readHref(ref.book, ref.chapter, ref.verse)}"><strong>${formatReference(ref.book, ref.chapter, verses)}</strong></a><span class="spacer"></span>
-        <button class="btn btn-small" id="votd-related">Related verses</button><button class="btn btn-small" id="votd-share">Share</button></div>
+        <button class="btn btn-small" id="votd-image">Image</button><button class="btn btn-small" id="votd-related">Related verses</button><button class="btn btn-small" id="votd-share">Share</button></div>
     </section>
     ${last ? `<section class="card"><div class="card-label">Continue reading</div>
       <div class="row"><strong style="font-size:18px">${formatReference(last.book, last.chapter)}</strong><span class="spacer"></span><a class="btn btn-primary" href="${readHref(last.book, last.chapter)}">Continue</a></div></section>`
       : `<section class="card"><div class="card-label">Start reading</div><p class="muted">New here? The Gospel of John is a wonderful place to begin.</p><div class="row"><a class="btn btn-primary" href="${readHref(42, 1)}">Read John 1</a><a class="btn" href="${readHref(0, 1)}">Genesis 1</a></div></section>`}
     <section class="card"><div class="card-label">Today's plan</div>${planHtml}</section>
+    ${todayPersonalHtml(st)}
     <section class="card row stats">
       <div><div class="stat">${streak}</div><div class="muted small">day streak</div></div><span class="spacer"></span>
       <div><div class="stat">${Object.keys(st.highlights).length}</div><div class="muted small">highlights</div></div><span class="spacer"></span>
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
     </div>`;
+  document.getElementById('votd-image').onclick = () => openImageDialog(dialog, { text: votdText, reference: `${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})` });
   document.getElementById('votd-related').onclick = () => openCrossRefsDialog(dialog, bible, ref.book, ref.chapter, [ref.verse], translation().abbr);
   document.getElementById('votd-share').onclick = () => shareText(`“${votdText}”\n— ${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})`);
+}
+
+function todayPersonalHtml(st) {
+  const memory = Object.values(st.memory || {});
+  const due = dueItems(memory, toDateString(new Date())).length;
+  const praying = (st.prayers || []).filter((p) => !p.answered).length;
+  return `<section class="card"><div class="card-label">Memory verses</div>
+      ${memory.length ? `<p>${due ? `<strong>${due}</strong> verse${due === 1 ? '' : 's'} to review today.` : 'All caught up. Well done!'} <span class="muted small">${memory.length} in total.</span></p><a class="btn ${due ? 'btn-primary' : ''}" href="#/memorize">Practice</a>` : '<p class="muted">Hide God’s word in your heart: select a verse and tap <strong>Memorize</strong>.</p>'}
+    </section>
+    <section class="card"><div class="card-label">Prayer</div>
+      <p>${praying ? `You are praying for <strong>${praying}</strong> thing${praying === 1 ? '' : 's'}.` : '<span class="muted">Keep a prayer list and record answers.</span>'}</p><a class="btn" href="#/library/prayers">Prayer list</a>
+    </section>`;
 }
 
 function greeting() {
@@ -563,6 +592,23 @@ actionBar.addEventListener('click', async (e) => {
       openCommentaryDialog(dialog, current.book, current.chapter, verses, store.get().settings.commentary, (id) => store.update((s) => (s.settings.commentary = id)));
       clearSelection();
       break;
+    case 'memorize': {
+      const key = memoryKey(current.book, current.chapter, verses);
+      store.update((s) => (s.memory[key] ??= newItem(current.book, current.chapter, verses, translation().id)));
+      toast(`Added ${formatReference(current.book, current.chapter, verses)} to memory verses`);
+      clearSelection();
+      break;
+    }
+    case 'pray':
+      openPrayerDialog(dialog, store, bible, { seed: { book: current.book, chapter: current.chapter, verses } });
+      clearSelection();
+      break;
+    case 'image': {
+      const text = verses.map((v) => verseText(current.book, current.chapter, v)).filter(Boolean).join(' ');
+      openImageDialog(dialog, { text, reference: `${formatReference(current.book, current.chapter, verses)} (${translation().abbr})` });
+      clearSelection();
+      break;
+    }
     case 'xrefs':
       openCrossRefsDialog(dialog, bible, current.book, current.chapter, verses, translation().abbr);
       clearSelection();
@@ -934,16 +980,21 @@ function renderLibrary(tab = 'highlights') {
             <p class="muted small" style="font-family:var(--font-reading)">${escapeHtml(verseText(r.book, r.chapter, r.verse))}</p><div class="note-text">${escapeHtml(n.text)}</div></div>`;
         }).join('')
       : '<div class="empty">Select a verse while reading and tap “Note” to write your thoughts.</div>';
+  } else if (tab === 'memory' || tab === 'prayers') {
+    content = '<div id="library-panel"><div class="loading">Loading…</div></div>';
   } else if (tab === 'history') {
     content = st.history.length
       ? st.history.map((h) => `<a class="result" href="${readHref(h.book, h.chapter)}"><strong>${formatReference(h.book, h.chapter)}</strong><span class="muted small">${new Date(h.ts).toLocaleString()}</span></a>`).join('')
       : '<div class="empty">Chapters you read will appear here.</div>';
   }
-  const tabs = [['highlights', 'Highlights'], ['bookmarks', 'Bookmarks'], ['notes', 'Notes'], ['history', 'History']];
+  const tabs = [['highlights', 'Highlights'], ['bookmarks', 'Bookmarks'], ['notes', 'Notes'], ['memory', 'Memory verses'], ['prayers', 'Prayers'], ['history', 'History']];
   main.innerHTML = `
     <h1>Library</h1>
     <div class="tabs" role="tablist">${tabs.map(([id, label]) => `<button role="tab" aria-selected="${id === tab}" data-tab-link="${id}">${label}</button>`).join('')}</div>
     <div role="tabpanel">${content}</div>`;
+  const panel = document.getElementById('library-panel');
+  if (tab === 'memory') renderMemoryList(panel, store);
+  if (tab === 'prayers') renderPrayers(panel, store, dialog, bible);
 }
 
 main.addEventListener('click', (e) => {
@@ -971,6 +1022,7 @@ Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
     variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
     bible = await loadTranslation(translation().id).catch(() => loadTranslation('kjv'));
     router();
+    checkReminder(store, { title: 'Time for your Bible reading', body: 'You haven’t read today yet. Open today’s verse and reading plan.' });
   })
   .catch(() => {
     main.innerHTML = '<div class="empty">The Bible text could not be loaded. Check your connection and refresh.</div>';

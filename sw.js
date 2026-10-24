@@ -1,5 +1,5 @@
 // Offline support: cache the app shell and Bible text, serve cache-first, refresh in the background.
-const CACHE = 'bible-app-v6';
+const CACHE = 'bible-app-v7';
 const ASSETS = [
   './',
   'index.html',
@@ -19,6 +19,10 @@ const ASSETS = [
   'js/topics.js',
   'js/maps.js',
   'js/timeline.js',
+  'js/memory.js',
+  'js/prayers.js',
+  'js/verse-image.js',
+  'js/reminders.js',
   'vendor/leaflet/leaflet.js',
   'vendor/leaflet/leaflet.css',
   'data/translations/index.json',
@@ -50,6 +54,28 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached);
       return cached || network;
+    }),
+  );
+});
+
+// Daily reminder in the background (installed app on browsers with Periodic Background Sync).
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag !== 'daily-reminder') return;
+  event.waitUntil(
+    self.registration.showNotification('Time for your Bible reading', {
+      body: 'Open today’s verse and reading plan.',
+      icon: 'icons/icon.svg',
+      tag: 'daily-reminder',
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const client = list.find((c) => 'focus' in c);
+      return client ? client.focus() : self.clients.openWindow('./#/today');
     }),
   );
 });
