@@ -187,6 +187,93 @@ mark { background: var(--hl-yellow); color: inherit; border-radius: 3px; padding
 .reading-list input { width: 20px; height: 20px; accent-color: var(--accent); }
 .day-nav { display: flex; align-items: center; gap: 8px; }
 
+/* Reader tools */
+.reader-tool { padding: 6px 10px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.reader-tool[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.tool-label { display: none; }
+.chapter-title-btn { min-width: 0; }
+.chapter-title-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-title-btn svg { flex: none; }
+.variant-mark { font-family: var(--font-ui); font-size: .7em; vertical-align: super; margin-left: 3px; text-decoration: none; color: var(--accent); font-weight: 700; padding: 0 2px; }
+.omitted { font-family: var(--font-ui); font-size: .8em; color: var(--muted); font-style: italic; }
+.translation-option { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; line-height: 1.5; }
+.translation-option.current { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.translation-option:hover { background: var(--surface-2); }
+
+/* Original language / interlinear */
+:root {
+  --font-hebrew: 'SBL Hebrew', 'Ezra SIL', 'Noto Serif Hebrew', 'Taamey Frank CLM', 'Times New Roman', serif;
+  --font-greek: 'SBL Greek', 'Gentium Plus', 'Noto Serif', 'Palatino Linotype', 'Times New Roman', serif;
+  --w-kjv: #b4580f;
+  --w-modern: #2f6db5;
+  --w-other: #7a4fb0;
+}
+:root[data-theme='dark'] { --w-kjv: #f0a35e; --w-modern: #7fb2f0; --w-other: #c4a3ec; }
+[lang='he'] { font-family: var(--font-hebrew); }
+[lang='grc'] { font-family: var(--font-greek); }
+.passage.original-mode .verse { display: block; margin-bottom: 4px; }
+.verse-block { margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
+.interlinear { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.word {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 1px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 6px 8px; min-width: 52px; font-family: var(--font-ui); line-height: 1.25;
+}
+.word:hover { border-color: var(--accent); }
+.w-orig { font-size: 1.25em; color: var(--text); }
+.interlinear[lang='he'] .w-orig { font-family: var(--font-hebrew); font-size: 1.4em; }
+.interlinear[lang='grc'] .w-orig { font-family: var(--font-greek); }
+.w-translit { font-size: 12px; color: var(--muted); font-style: italic; }
+.w-gloss { font-size: 13px; color: var(--text); font-weight: 600; max-width: 140px; text-align: center; }
+.w-strong { font-size: 10px; color: var(--muted); }
+.word.w-kjv { border-color: var(--w-kjv); border-style: dashed; }
+.word.w-kjv .w-gloss, span.w-kjv { color: var(--w-kjv); }
+.word.w-modern { border-color: var(--w-modern); border-style: dashed; }
+.word.w-modern .w-gloss, span.w-modern { color: var(--w-modern); }
+.word.w-other { border-color: var(--w-other); border-style: dashed; opacity: .85; }
+.word.w-other .w-gloss, span.w-other { color: var(--w-other); }
+.legend { font-family: var(--font-ui); margin: 0 0 14px; line-height: 1.8; }
+.chip { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px dashed currentColor; white-space: nowrap; }
+.chip.w-kjv { color: var(--w-kjv); }
+.chip.w-modern { color: var(--w-modern); }
+.chip.w-other { color: var(--w-other); }
+.original-line { font-size: 1.35em; line-height: 1.8; margin: 4px 0 8px; }
+.note-box { border-left: 3px solid var(--accent); background: var(--surface-2); padding: 10px 12px; border-radius: 0 10px 10px 0; margin: 8px 0; font-size: 15px; line-height: 1.5; }
+.note-box.w-kjv { border-left-color: var(--w-kjv); }
+.note-box.w-modern { border-left-color: var(--w-modern); }
+.note-box.w-other { border-left-color: var(--w-other); }
+
+/* Word study */
+h3 { font-size: 15px; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.lemma-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.lemma { font-size: 34px; line-height: 1.3; }
+.lemma[lang='he'] { font-size: 40px; }
+.lemma-translit { font-size: 18px; font-style: italic; color: var(--muted); }
+.lemma-gloss { font-size: 18px; margin: 4px 0; }
+.occurrence { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.occurrence p { margin: 6px 0; }
+.definition { line-height: 1.6; font-size: 15px; overflow-wrap: anywhere; }
+.definition a { cursor: pointer; }
+.definition.clamp { max-height: 220px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 75%, transparent); mask-image: linear-gradient(#000 75%, transparent); }
+.usage { display: grid; gap: 6px; }
+.usage-row { display: grid; grid-template-columns: minmax(90px, 38%) 1fr 44px; align-items: center; gap: 10px; font-size: 14px; }
+.usage-row .bar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.usage-row .bar > div { height: 100%; background: var(--accent); border-radius: 999px; }
+.usage-row span:last-child { text-align: right; }
+.dict-lemma { font-size: 1.15em; margin-right: 4px; }
+.dict-lemma[lang='he'] { font-family: var(--font-hebrew); }
+
+/* Compare */
+.compare { display: grid; gap: 2px; }
+.compare-row { display: grid; grid-template-columns: 48px 1fr; gap: 10px; padding: 8px 6px; border-radius: 8px; font-family: var(--font-reading); line-height: 1.55; }
+.compare-row.current { background: var(--surface-2); }
+.t-abbr { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--accent); padding-top: 3px; }
+.prose { line-height: 1.65; }
+.prose li { margin-bottom: 6px; }
+.tabs .tab-link { border: 1px solid var(--border); background: var(--surface); padding: 7px 14px; border-radius: 999px; white-space: nowrap; text-decoration: none; color: var(--text); }
+.tabs .tab-link[aria-selected='true'] { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+select.picker-filter { appearance: auto; }
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;
@@ -253,6 +340,7 @@ textarea { width: 100%; min-height: 160px; padding: 12px; border-radius: 12px; b
   .actions { justify-content: flex-end; }
   .actions button { flex: 0 0 auto; }
   .book-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .tool-label { display: inline; }
   dialog { max-height: 80vh; }
 }
 

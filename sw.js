@@ -1,5 +1,5 @@
 // Offline support: cache the app shell and Bible text, serve cache-first, refresh in the background.
-const CACHE = 'bible-app-v1';
+const CACHE = 'bible-app-v2';
 const ASSETS = [
   './',
   'index.html',
@@ -9,7 +9,13 @@ const ASSETS = [
   'js/plans.js',
   'js/store.js',
   'js/votd.js',
-  'data/kjv.json',
+  'js/util.js',
+  'js/data.js',
+  'js/morph.js',
+  'js/study.js',
+  'data/translations/index.json',
+  'data/translations/kjv.json',
+  'data/variants.json',
   'icons/icon.svg',
   'manifest.webmanifest',
 ];

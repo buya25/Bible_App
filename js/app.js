@@ -2,6 +2,9 @@ import { BOOKS, parseReference, formatReference, verseKey, parseVerseKey, search
 import { PLANS, buildSchedule, describeDay, toDateString, currentPlanDay, computeStreak } from './plans.js';
 import { verseOfTheDay } from './votd.js';
 import { store } from './store.js';
+import { escapeHtml, readHref, toast } from './util.js';
+import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
+import { interlinearHtml, interlinearLegend, openWordDialog, renderWordPage, renderVersePage, renderStudyHome, studyVerseHref, wordContext } from './study.js';
 
 const main = document.getElementById('main');
 const dialog = document.getElementById('dialog');
@@ -11,9 +14,10 @@ let bible = null;
 let selection = new Set(); // selected verse numbers in the current chapter
 let current = { book: 42, chapter: 1 };
 let speaking = null; // { verse } while read-aloud is active
+let translations = []; // [{ id, abbr, name, year, description }]
+let variantMap = new Map(); // verseKey -> manuscript-difference summary
 
-const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const readHref = (book, chapter, verse) => `#/read/${BOOKS[book].slug}/${chapter}${verse ? `/${verse}` : ''}`;
+const translation = () => translations.find((t) => t.id === store.get().settings.translation) || translations[0] || { id: 'kjv', abbr: 'KJV', name: 'King James Version' };
 const verseText = (book, chapter, verse) => bible.books[book][chapter - 1][verse - 1];
 const ICONS = {
   prev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -22,14 +26,6 @@ const ICONS = {
   stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>',
   down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
 };
-
-function toast(message) {
-  const el = document.getElementById('toast');
-  el.textContent = message;
-  el.classList.add('show');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => el.classList.remove('show'), 2200);
-}
 
 /* ---------- Settings ---------- */
 
@@ -54,6 +50,7 @@ function openSettings() {
     dialog.innerHTML = `
       <div class="dialog-head"><h2>Settings</h2><button class="btn btn-small" data-close>Done</button></div>
       <div class="dialog-body">
+        <div class="field"><label for="tr">Bible translation</label><select id="tr" class="picker-filter" data-select="translation">${translations.map((t) => `<option value="${t.id}" ${t.id === translation().id ? 'selected' : ''}>${t.abbr} — ${escapeHtml(t.name)}</option>`).join('')}</select></div>
         <div class="field"><span class="label">Theme</span>${seg('theme', [['auto', 'Auto'], ['light', 'Light'], ['sepia', 'Sepia'], ['dark', 'Dark']])}</div>
         <div class="field"><span class="label">Font</span>${seg('font', [['serif', 'Serif'], ['sans', 'Sans']])}</div>
         <div class="field"><label for="fs">Text size: ${s.fontSize}px</label><input id="fs" type="range" min="14" max="32" step="1" value="${s.fontSize}" data-range="fontSize"></div>
@@ -65,7 +62,11 @@ function openSettings() {
           <p class="muted small">Highlights, notes, bookmarks and plan progress are stored only on this device. Export a backup to move them to another device.</p>
           <div class="row"><button class="btn btn-small" data-export>Export backup</button><label class="btn btn-small">Import backup<input type="file" accept="application/json" data-import hidden></label></div>
         </div>
-        <p class="muted small">Scripture: King James Version (public domain).</p>
+        <div class="field"><span class="label">Offline use</span>
+          <p class="muted small">Your current translation works offline once opened. Download every translation, the Hebrew and Greek texts and the dictionary to use them all without internet.</p>
+          <div class="row"><button class="btn btn-small" data-download>Download everything</button><span id="dl-progress" class="small muted"></span></div>
+        </div>
+        <p class="muted small">Translations: public domain. Hebrew/Greek texts and dictionary: STEPBible.org (CC BY 4.0). <a href="#/study/about" data-close>Sources</a></p>
       </div>`;
   };
   render();
@@ -78,8 +79,11 @@ function openSettings() {
       render();
     }
     if (t?.hasAttribute('data-export')) exportBackup();
+    if (t?.hasAttribute('data-download')) downloadEverything(t);
+    if (e.target.closest('a[data-close]')) dialog.close();
   };
   dialog.oninput = (e) => {
+    if (e.target.dataset.select === 'translation') return switchTranslation(e.target.value);
     const { range, check } = e.target.dataset;
     if (range) store.update((st) => (st.settings[range] = Number(e.target.value)));
     if (check) store.update((st) => (st.settings[check] = e.target.checked));
@@ -102,6 +106,56 @@ function openSettings() {
     }
   };
   dialog.showModal();
+}
+
+async function switchTranslation(id) {
+  try {
+    bible = await loadTranslation(id);
+  } catch {
+    toast('Could not load that translation. Check your connection.');
+    return;
+  }
+  store.update((st) => (st.settings.translation = id));
+  toast(`Now reading the ${translation().abbr}`);
+  router();
+}
+
+function openTranslationPicker() {
+  dialog.innerHTML = `
+    <div class="dialog-head"><h2>Translation</h2><button class="btn btn-small" data-close>Close</button></div>
+    <div class="dialog-body">
+      ${translations.map((t) => `<button class="translation-option${t.id === translation().id ? ' current' : ''}" data-translation="${t.id}">
+        <strong>${t.abbr}</strong> · ${escapeHtml(t.name)} <span class="muted small">(${t.year})</span><br><span class="muted small">${escapeHtml(t.description)}</span></button>`).join('')}
+      <p class="small muted">Want to see how a verse was written? Turn on <strong>Original</strong> in the reader, or select a verse and tap <strong>Study</strong> to compare all translations.</p>
+    </div>`;
+  dialog.onclick = (e) => {
+    const t = e.target.closest('button');
+    if (e.target === dialog || t?.hasAttribute('data-close')) return dialog.close();
+    if (t?.dataset.translation) {
+      dialog.close();
+      switchTranslation(t.dataset.translation);
+    }
+  };
+  dialog.oninput = dialog.onchange = null;
+  dialog.showModal();
+}
+
+async function downloadEverything(button) {
+  const progress = document.getElementById('dl-progress');
+  button.disabled = true;
+  try {
+    const files = await allDataFiles();
+    let done = 0;
+    for (const file of files) {
+      await fetch(file).then((r) => r.ok && r.blob());
+      done++;
+      if (progress) progress.textContent = `${Math.round((done / files.length) * 100)}%`;
+    }
+    if (progress) progress.textContent = 'All set: everything is available offline.';
+  } catch {
+    if (progress) progress.textContent = 'Download interrupted. Check your connection and try again.';
+    button.disabled = false;
+  }
 }
 
 function exportBackup() {
@@ -131,14 +185,34 @@ function setActiveTab(view) {
 function router() {
   stopSpeaking();
   clearSelection();
+  wordContext.lookup = null;
   const { view, parts, params } = route();
   setActiveTab(view);
   if (!bible) {
     main.innerHTML = '<div class="loading">Loading the Bible…</div>';
     return;
   }
-  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), plans: renderPlans, library: () => renderLibrary(parts[0]) };
+  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), plans: renderPlans, library: () => renderLibrary(parts[0]) };
   (views[view] || renderToday)();
+}
+
+/* ---------- Study ---------- */
+
+function renderStudy(parts, params) {
+  window.scrollTo(0, 0);
+  if (parts[0] === 'word' && parts[1]) return renderWordPage(main, parts[1], bible, translation().abbr);
+  if (parts[0] === 'verse' && parts[3]) {
+    const book = Number(parts[1]);
+    const chapter = Number(parts[2]);
+    if (BOOKS[book] && chapter >= 1 && chapter <= bible.books[book].length) {
+      return renderVersePage(main, book, chapter, parts[3], translation().id).catch(() => {
+        main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
+      });
+    }
+  }
+  return renderStudyHome(main, ['dictionary', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params).catch(() => {
+    main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
+  });
 }
 
 /* ---------- Today ---------- */
@@ -168,7 +242,7 @@ function renderToday() {
     <h1>${greeting()}</h1>
     <div class="dashboard">
     <section class="card card-wide">
-      <div class="card-label">Verse of the day</div>
+      <div class="card-label">Verse of the day · ${translation().abbr}</div>
       <p class="votd-text">${escapeHtml(votdText)}</p>
       <div class="row"><a href="${readHref(ref.book, ref.chapter, ref.verse)}"><strong>${formatReference(ref.book, ref.chapter, verses)}</strong></a><span class="spacer"></span>
         <button class="btn btn-small" id="votd-share">Share</button></div>
@@ -183,7 +257,7 @@ function renderToday() {
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
     </div>`;
-  document.getElementById('votd-share').onclick = () => shareText(`“${votdText}”\n— ${formatReference(ref.book, ref.chapter, verses)} (KJV)`);
+  document.getElementById('votd-share').onclick = () => shareText(`“${votdText}”\n— ${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})`);
 }
 
 function greeting() {
@@ -205,18 +279,23 @@ function openChapterFromRoute(parts) {
     main.innerHTML = `<div class="empty">That passage couldn't be found. <a href="#/read">Go to reader</a></div>`;
     return;
   }
-  current = { book, chapter };
-  renderReader();
   const verse = parseInt(parts[2], 10);
-  if (verse) {
-    const el = main.querySelector(`.verse[data-v="${verse}"]`);
-    if (el) {
-      el.scrollIntoView({ block: 'center' });
-      el.classList.add('flash');
-    }
-  } else {
-    window.scrollTo(0, 0);
-  }
+  current = {
+    book,
+    chapter,
+    scrollToVerse: verse
+      ? () => {
+          const el = main.querySelector(`.verse[data-v="${verse}"]`);
+          if (el) {
+            el.scrollIntoView({ block: 'center' });
+            el.classList.add('flash');
+          }
+        }
+      : null,
+  };
+  renderReader();
+  if (verse) current.scrollToVerse();
+  else window.scrollTo(0, 0);
   recordReading(book, chapter);
 }
 
@@ -234,26 +313,34 @@ function renderReader() {
   const verses = bible.books[book][chapter - 1];
   const prev = adjacentChapter(-1);
   const next = adjacentChapter(1);
-  document.title = `${formatReference(book, chapter)} — Bible`;
+  const original = st.settings.readerMode === 'original';
+  const abbr = translation().abbr;
+  document.title = `${formatReference(book, chapter)} (${abbr}) — Bible`;
 
-  const body = verses
-    .map((text, i) => {
-      const v = i + 1;
-      const key = verseKey(book, chapter, v);
-      const hl = st.highlights[key];
-      const icons = `${st.bookmarks[key] ? '<span class="verse-icon" title="Bookmarked">🔖</span>' : ''}${st.notes[key] ? `<a class="verse-icon" href="#" data-note="${v}" title="View note" aria-label="View note">📝</a>` : ''}`;
-      return `<span class="verse${selection.has(v) ? ' selected' : ''}" data-v="${v}" ${hl ? `data-hl="${hl}"` : ''} tabindex="0"><sup>${v}</sup>${escapeHtml(text)}${icons}</span> `;
-    })
-    .join('');
+  const verseHtml = (text, v) => {
+    const key = verseKey(book, chapter, v);
+    const hl = st.highlights[key];
+    const variant = variantMap.get(key);
+    const icons = `${st.bookmarks[key] ? '<span class="verse-icon" title="Bookmarked">🔖</span>' : ''}${st.notes[key] ? `<a class="verse-icon" href="#" data-note="${v}" title="View note" aria-label="View note">📝</a>` : ''}`;
+    const mark = variant ? `<a class="variant-mark" href="${studyVerseHref(book, chapter, v)}" title="Manuscripts differ in this verse" aria-label="Manuscript differences">†</a>` : '';
+    const body = text ? escapeHtml(text) : `<span class="omitted">Not included in the ${abbr}: this verse is found only in later manuscripts.</span>`;
+    return `<span class="verse${selection.has(v) ? ' selected' : ''}" data-v="${v}" ${hl ? `data-hl="${hl}"` : ''} tabindex="0"><sup>${v}</sup>${body}${mark}${icons}</span>`;
+  };
+
+  const body = original
+    ? '<div class="loading">Loading the original text…</div>'
+    : verses.map((text, i) => verseHtml(text, i + 1)).join(' ');
 
   main.innerHTML = `
     <div class="reader-nav">
       <a class="icon-btn" ${prev ? `href="${readHref(prev.book, prev.chapter)}"` : 'aria-disabled="true"'} aria-label="Previous chapter">${ICONS.prev}</a>
-      <button class="chapter-title-btn" id="picker-btn" aria-haspopup="dialog">${formatReference(book, chapter)} ${ICONS.down}</button>
+      <button class="chapter-title-btn" id="picker-btn" aria-haspopup="dialog"><span>${formatReference(book, chapter)}</span> ${ICONS.down}</button>
+      <button class="btn btn-small reader-tool" id="translation-btn" aria-label="Translation: ${translation().name}" title="Change translation">${abbr}</button>
+      <button class="btn btn-small reader-tool" id="original-btn" aria-pressed="${original}" title="Show the original ${book < 39 ? 'Hebrew' : 'Greek'} word by word">${book < 39 ? 'עב' : 'Ελ'}<span class="tool-label"> Original</span></button>
       <button class="icon-btn" id="speak-btn" aria-label="Read aloud" title="Read aloud">${speaking ? ICONS.stop : ICONS.play}</button>
       <a class="icon-btn" ${next ? `href="${readHref(next.book, next.chapter)}"` : 'aria-disabled="true"'} aria-label="Next chapter">${ICONS.next}</a>
     </div>
-    <article class="passage${st.settings.paragraphMode ? ' paragraphs' : ''}" lang="en">
+    <article class="passage${st.settings.paragraphMode && !original ? ' paragraphs' : ''}${original ? ' original-mode' : ''}" lang="en">
       <h2>${BOOKS[book].name} · Chapter ${chapter}</h2>
       ${body}
     </article>
@@ -264,6 +351,32 @@ function renderReader() {
 
   document.getElementById('picker-btn').onclick = () => openPicker();
   document.getElementById('speak-btn').onclick = toggleSpeaking;
+  document.getElementById('translation-btn').onclick = openTranslationPicker;
+  document.getElementById('original-btn').onclick = () => {
+    store.update((s) => (s.settings.readerMode = original ? 'text' : 'original'));
+    renderReader();
+  };
+
+  if (original) {
+    return loadOriginal(book)
+      .then((data) => {
+        if (current.book !== book || current.chapter !== chapter || route().view !== 'read') return;
+        const passage = main.querySelector('.passage');
+        const words = data.chapters[chapter - 1];
+        passage.innerHTML = `<h2>${BOOKS[book].name} · Chapter ${chapter}</h2>${interlinearLegend(data.lang)}${verses
+          .map((text, i) => `<div class="verse-block" data-v="${i + 1}">${verseHtml(text, i + 1)}${interlinearHtml(words[i]?.w || [], data.lang)}</div>`)
+          .join('')}`;
+        wordContext.lookup = (btn) => {
+          const v = Number(btn.closest('.verse-block').dataset.v);
+          return { word: words[v - 1].w[Number(btn.dataset.word)], lang: data.lang };
+        };
+        current.scrollToVerse?.();
+      })
+      .catch(() => {
+        main.querySelector('.passage').innerHTML = '<div class="empty">The original text could not be loaded. Check your connection.</div>';
+      });
+  }
+  return Promise.resolve();
 }
 
 function adjacentChapter(dir) {
@@ -286,6 +399,7 @@ main.addEventListener('click', (e) => {
     e.preventDefault();
     return openNote([Number(noteLink.dataset.note)]);
   }
+  if (e.target.closest('a, button')) return;
   const verse = e.target.closest('.verse');
   if (verse) toggleVerse(Number(verse.dataset.v));
 });
@@ -295,6 +409,23 @@ main.addEventListener('keydown', (e) => {
     e.preventDefault();
     toggleVerse(Number(verse.dataset.v));
   }
+});
+
+// Tapping a Hebrew/Greek word (reader in Original mode, or a study page) opens its word study.
+main.addEventListener('click', (e) => {
+  const btn = e.target.closest('.word');
+  const found = btn && wordContext.lookup?.(btn);
+  if (found?.word) openWordDialog(dialog, found.word, found.lang);
+});
+
+// Verse links inside dictionary definitions.
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[data-ref]');
+  if (!link) return;
+  e.preventDefault();
+  const [book, chapter, verse] = link.dataset.ref.split('.').map((x) => parseInt(x, 10));
+  if (dialog.open) dialog.close();
+  if (BOOKS[book]) location.hash = readHref(book, chapter || 1, verse || undefined);
 });
 
 function toggleVerse(v) {
@@ -321,8 +452,11 @@ function updateActionBar() {
 
 function selectedPassageText() {
   const verses = [...selection].sort((a, b) => a - b);
-  const text = verses.map((v) => (verses.length > 1 ? `${v} ` : '') + verseText(current.book, current.chapter, v)).join(' ');
-  return `“${text}”\n— ${formatReference(current.book, current.chapter, verses)} (KJV)`;
+  const text = verses
+    .filter((v) => verseText(current.book, current.chapter, v))
+    .map((v) => (verses.length > 1 ? `${v} ` : '') + verseText(current.book, current.chapter, v))
+    .join(' ');
+  return `“${text}”\n— ${formatReference(current.book, current.chapter, verses)} (${translation().abbr})`;
 }
 
 actionBar.addEventListener('click', async (e) => {
@@ -349,6 +483,9 @@ actionBar.addEventListener('click', async (e) => {
     }
     case 'note':
       openNote(verses);
+      break;
+    case 'study':
+      location.hash = studyVerseHref(current.book, current.chapter, formatReference(current.book, current.chapter, verses).split(':')[1].replace(/\s/g, ''));
       break;
     case 'copy':
       try {
@@ -532,6 +669,10 @@ function speakVerse() {
   const el = main.querySelector(`.verse[data-v="${speaking.verse}"]`);
   el?.classList.add('speaking');
   el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  if (!verses[speaking.verse - 1]) {
+    speaking.verse++;
+    return speakVerse();
+  }
   const u = new SpeechSynthesisUtterance(verses[speaking.verse - 1]);
   u.rate = store.get().settings.speechRate;
   u.lang = 'en-US';
@@ -583,7 +724,7 @@ function renderSearch(params) {
   const refHtml = ref ? `<a class="result" href="${readHref(ref.book, ref.chapter, ref.verse)}"><strong>Go to ${formatReference(ref.book, ref.chapter, ref.verse ? [ref.verse] : [])} →</strong><span>${ref.verse ? escapeHtml(verseText(ref.book, ref.chapter, ref.verse)) : ''}</span></a>` : '';
   const { total, results: hits } = search(bible, q, { scope: /^\d+$/.test(scope) ? Number(scope) : scope, limit: 300 });
   results.innerHTML = `${refHtml}
-    <p class="muted small">${total ? `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found${total > hits.length ? ` · showing first ${hits.length}` : ''}` : ref ? '' : 'No verses found. Try fewer words or a different spelling.'}</p>
+    <p class="muted small">${total ? `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found in the ${translation().abbr}${total > hits.length ? ` · showing first ${hits.length}` : ''}` : ref ? '' : 'No verses found. Try fewer words or a different spelling.'}</p>
     ${hits.map((h) => `<a class="result" href="${readHref(h.book, h.chapter, h.verse)}"><strong>${formatReference(h.book, h.chapter, [h.verse])}</strong><span>${highlightTerms(escapeHtml(h.text), q)}</span></a>`).join('')}`;
 }
 
@@ -714,13 +855,11 @@ window.addEventListener('hashchange', router);
 applySettings();
 router();
 
-fetch('data/kjv.json')
-  .then((r) => {
-    if (!r.ok) throw new Error(r.statusText);
-    return r.json();
-  })
-  .then((data) => {
-    bible = data;
+Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
+  .then(async ([list, variants]) => {
+    translations = list;
+    variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
+    bible = await loadTranslation(translation().id).catch(() => loadTranslation('kjv'));
     router();
   })
   .catch(() => {

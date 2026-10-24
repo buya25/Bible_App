@@ -4,6 +4,11 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 
 ## Features
 
+- **Five translations:** KJV, World English Bible (WEB), Berean Standard Bible (BSB), Young's Literal Translation (YLT) and the American Standard Version (ASV), all public domain.
+- **Original Hebrew and Greek:** turn on **Original** in the reader to see each verse word by word, with the original word, transliteration, literal English meaning and Strong's number. Hebrew reads right to left.
+- **Dictionary (lexicon):** tap any original word for its definition and grammar, how translators render it, how often it occurs, and every verse where it is used. You can also search by English word, Hebrew/Greek word or Strong's number.
+- **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
+- **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
 - **Highlights:** five colours, applied to one verse or several at once.
 - **Notes and bookmarks:** attach your own reflections to any verse.
@@ -15,7 +20,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Library:** all your highlights, bookmarks, notes and reading history in one place.
 - **Comfort settings:** light, sepia and dark themes (or follow the system), serif or sans font, text size and line spacing.
 - **Private by design:** your data stays in your browser. Export and import a backup file to move it between devices.
-- **Works offline:** after the first visit, the full Bible text is cached on the device.
+- **Works offline:** your current translation is cached on the device after the first visit. **Settings → Download everything** caches all translations, the original texts and the dictionary.
 - **Responsive layout:** bottom tabs on phones, wider card layouts on tablets, and top navigation with a comfortable reading width on desktop.
 
 ## Running locally
@@ -35,7 +40,7 @@ To deploy, upload the folder to any static host, such as GitHub Pages, Netlify o
 npm test             # node --test, no dependencies
 ```
 
-The tests cover reference parsing, search, reading-plan schedules, streaks and the integrity of the Bible data (66 books, 1,189 chapters, 31,102 verses).
+The tests cover reference parsing, search, reading-plan schedules, streaks, grammar-code decoding, dictionary lookup and search, and the integrity of the data: 66 books, 31,102 verses, every translation aligned to the same verse structure, and original-language words for every verse.
 
 ## Project layout
 
@@ -48,5 +53,27 @@ The tests cover reference parsing, search, reading-plan schedules, streaks and t
 | `js/plans.js` | Reading plan schedules and streaks (pure functions) |
 | `js/store.js` | Local storage of user data |
 | `js/votd.js` | Verse of the day |
-| `data/kjv.json` | King James Version text (public domain) |
+| `js/study.js` | Interlinear, word studies, verse comparison, manuscript differences |
+| `js/data.js` | Loading and caching of data files; dictionary search |
+| `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
+| `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
+| `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |
+| `data/lexicon/` | Hebrew/Greek dictionary with usage statistics, split by Strong's number |
+| `data/variants.json` | Verses where manuscripts differ |
+| `tools/build_data.py` | Regenerates everything in `data/` from the open sources |
 | `sw.js`, `manifest.webmanifest` | Offline support and installability |
+
+## Data sources and licences
+
+| Data | Source | Licence |
+| --- | --- | --- |
+| KJV | [thiagobodruk/bible](https://github.com/thiagobodruk/bible) | Public domain |
+| BSB, YLT, ASV | [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases) | Public domain |
+| WEB | [seven1m/open-bibles](https://github.com/seven1m/open-bibles) | Public domain |
+| Hebrew OT (TAHOT), Greek NT (TAGNT), lexicons (TBESH, TBESG) | [STEPBible.org](https://github.com/STEPBible/STEPBible-Data), Tyndale House, Cambridge | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+
+The STEPBible data is reformatted, not reworded. `tools/build_data.py` keeps the needed fields, reduces the lexicon HTML to bold, italics, line breaks and verse links, and maps references to KJV verse numbering. To regenerate the data, clone the sources into one folder and run:
+
+```sh
+python3 tools/build_data.py /path/to/sources
+```

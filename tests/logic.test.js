@@ -5,7 +5,7 @@ import { BOOKS, findBook, parseReference, formatReference, search, highlightTerm
 import { PLANS, buildSchedule, describeDay, currentPlanDay, computeStreak } from '../js/plans.js';
 import { VERSES, verseOfTheDay } from '../js/votd.js';
 
-const bible = JSON.parse(readFileSync(new URL('../data/kjv.json', import.meta.url), 'utf8'));
+const bible = JSON.parse(readFileSync(new URL('../data/translations/kjv.json', import.meta.url), 'utf8'));
 
 test('bible data is complete', () => {
   assert.equal(bible.books.length, 66);
