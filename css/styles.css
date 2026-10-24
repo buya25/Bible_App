@@ -390,6 +390,23 @@ mark.missed { background: none; color: var(--w-kjv); text-decoration: underline 
 .verse-canvas { width: 100%; max-width: 480px; aspect-ratio: 1; display: block; margin: 0 auto 12px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
 .theme-choice { flex-wrap: wrap; }
 
+/* Simple mode, onboarding, More sheet, safety cards */
+:root[data-mode='simple'] [data-advanced] { display: none !important; }
+.care-card { border-color: var(--accent); }
+.more-sheet { display: grid; gap: 8px; }
+.more-item, .mode-option { display: grid; gap: 2px; text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.more-item:hover, .mode-option:hover { border-color: var(--accent); }
+.mode-option { margin-bottom: 8px; }
+.mode-option[aria-pressed='true'] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tour p { line-height: 1.6; }
+.tour-dots { display: flex; gap: 6px; justify-content: center; margin: 18px 0 14px; }
+.tour-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.tour-dots span.on { background: var(--accent); }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.tool-card { display: grid; gap: 6px; text-decoration: none; color: var(--text); margin: 0; }
+.tool-card strong { font-size: 17px; color: var(--accent); }
+.tool-card:hover { border-color: var(--accent); }
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;

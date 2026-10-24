@@ -3,7 +3,7 @@
 const KEY = 'bible-app:v1';
 
 export const DEFAULTS = {
-  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry', parallel: '', reminder: false, reminderTime: '07:00' },
+  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry', parallel: '', reminder: false, reminderTime: '07:00', mode: 'full' },
   highlights: {}, // verseKey -> color name
   bookmarks: {}, // verseKey -> timestamp
   notes: {}, // verseKey -> { text, updated }
@@ -13,6 +13,11 @@ export const DEFAULTS = {
   memory: {}, // memoryKey -> { book, chapter, verses, t, level, due, added, reviews }
   prayers: [], // [{ id, title, details, verses, created, answered, answerNote }]
   reminderShown: null, // 'YYYY-MM-DD' the reminder last showed
+  onboarded: false, // welcome tour seen
+  lastBackup: null, // ISO date of the last exported backup
+  dismissed: {}, // suggestion -> ISO date dismissed ('install', 'backup')
+  visitDays: 0, // distinct days the app was opened
+  lastVisit: null,
 };
 
 let state = load();

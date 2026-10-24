@@ -10,6 +10,8 @@ import { newItem, memoryKey, renderMemoryList, renderPractice, dueItems } from '
 import { openPrayerDialog, renderPrayers } from './prayers.js';
 import { openImageDialog } from './verse-image.js';
 import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
+import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount } from './safety.js';
+import { openTour, openMoreSheet } from './onboarding.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -49,6 +51,7 @@ function applySettings() {
   root.dataset.theme = s.theme === 'sepia' ? 'sepia' : dark ? 'dark' : 'light';
   root.dataset.font = s.font;
   root.dataset.verseNumbers = s.verseNumbers ? 'on' : 'off';
+  root.dataset.mode = s.mode === 'simple' ? 'simple' : 'full';
   root.style.setProperty('--reading-size', `${s.fontSize}px`);
   root.style.setProperty('--reading-line', s.lineHeight);
   document.querySelector('meta[name="theme-color"]').content = getComputedStyle(root).getPropertyValue('--bg').trim();
@@ -64,6 +67,8 @@ function openSettings() {
       <div class="dialog-head"><h2>Settings</h2><button class="btn btn-small" data-close>Done</button></div>
       <div class="dialog-body">
         <div class="field"><label for="tr">Bible translation</label><select id="tr" class="picker-filter" data-select="translation">${translations.map((t) => `<option value="${t.id}" ${t.id === translation().id ? 'selected' : ''}>${t.abbr} — ${escapeHtml(t.name)}</option>`).join('')}</select></div>
+        <div class="field"><span class="label">Features</span>${seg('mode', [['simple', 'Simple'], ['full', 'Full study']])}
+          <p class="muted small">Simple hides the original languages, commentaries, cross references and other study tools. <button class="link-btn small" data-tour>Show the welcome tour again</button></p></div>
         <div class="field"><span class="label">Theme</span>${seg('theme', [['auto', 'Auto'], ['light', 'Light'], ['sepia', 'Sepia'], ['dark', 'Dark']])}</div>
         <div class="field"><span class="label">Font</span>${seg('font', [['serif', 'Serif'], ['sans', 'Sans']])}</div>
         <div class="field"><label for="fs">Text size: ${s.fontSize}px</label><input id="fs" type="range" min="14" max="32" step="1" value="${s.fontSize}" data-range="fontSize"></div>
@@ -78,7 +83,8 @@ function openSettings() {
           <p class="muted small">Notifications appear when you open the app after this time (and in the background on some installed apps). A calendar reminder works on every device.</p>
         </div>
         <div class="field"><span class="label">Your data</span>
-          <p class="muted small">Highlights, notes, bookmarks and plan progress are stored only on this device. Export a backup to move them to another device.</p>
+          <p class="muted small">Highlights, notes, prayers, memory verses and plan progress are stored only on this device. Export a backup to keep them safe or move them to another device.${s.lastBackup ? ` Last backup: ${new Date(s.lastBackup).toLocaleDateString()}.` : ''}</p>
+          <p class="muted small" id="storage-status"></p>
           <div class="row"><button class="btn btn-small" data-export>Export backup</button><label class="btn btn-small">Import backup<input type="file" accept="application/json" data-import hidden></label></div>
         </div>
         <div class="field"><span class="label">Offline use</span>
@@ -89,6 +95,10 @@ function openSettings() {
       </div>`;
   };
   render();
+  storageStatusText().then((text) => {
+    const el = document.getElementById('storage-status');
+    if (el) el.textContent = text;
+  });
   dialog.onclick = (e) => {
     const t = e.target.closest('button');
     if (e.target === dialog || t?.hasAttribute('data-close')) return dialog.close();
@@ -96,10 +106,15 @@ function openSettings() {
       store.update((st) => (st.settings[t.dataset.set] = t.dataset.value));
       applySettings();
       render();
+      if (t.dataset.set === 'mode') router();
     }
     if (t?.hasAttribute('data-export')) exportBackup();
     if (t?.hasAttribute('data-download')) downloadEverything(t);
     if (t?.hasAttribute('data-ics')) downloadIcs(store.get().settings.reminderTime);
+    if (t?.hasAttribute('data-tour')) {
+      dialog.close();
+      return showTour();
+    }
     if (e.target.closest('a[data-close]')) dialog.close();
   };
   dialog.oninput = (e) => {
@@ -194,12 +209,37 @@ async function downloadEverything(button) {
   }
 }
 
+// Ask for persistent storage as soon as there is personal data worth protecting.
+let persistenceAsked = false;
+store.subscribe((st) => {
+  if (!persistenceAsked && userDataCount(st) > 0) {
+    persistenceAsked = true;
+    requestPersistence();
+  }
+});
+
+function showTour() {
+  openTour(dialog, {
+    mode: store.get().settings.mode,
+    onDone: (mode) => {
+      dialog.oncancel = null;
+      store.update((s) => {
+        s.onboarded = true;
+        s.settings.mode = mode;
+      });
+      applySettings();
+      router();
+    },
+  });
+}
+
 function exportBackup() {
   const blob = new Blob([store.exportData()], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `bible-backup-${toDateString(new Date())}.json`;
   a.click();
+  store.update((s) => (s.lastBackup = new Date().toISOString()));
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
@@ -258,7 +298,7 @@ function renderStudy(parts, params) {
       });
     }
   }
-  return renderStudyHome(main, ['dictionary', 'people', 'topics', 'bible-dictionary', 'maps', 'timeline', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params, { book: current.book }).catch(() => {
+  return renderStudyHome(main, ['dictionary', 'people', 'topics', 'bible-dictionary', 'maps', 'timeline', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'home', params, { book: current.book }).catch(() => {
     main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
   });
 }
@@ -289,11 +329,12 @@ function renderToday() {
   main.innerHTML = `
     <h1>${greeting()}</h1>
     <div class="dashboard">
+    ${safetyCardsHtml(st)}
     <section class="card card-wide">
       <div class="card-label">Verse of the day · ${translation().abbr}</div>
       <p class="votd-text">${escapeHtml(votdText)}</p>
       <div class="row"><a href="${readHref(ref.book, ref.chapter, ref.verse)}"><strong>${formatReference(ref.book, ref.chapter, verses)}</strong></a><span class="spacer"></span>
-        <button class="btn btn-small" id="votd-image">Image</button><button class="btn btn-small" id="votd-related">Related verses</button><button class="btn btn-small" id="votd-share">Share</button></div>
+        <button class="btn btn-small" id="votd-image">Image</button><button class="btn btn-small" id="votd-related" data-advanced>Related verses</button><button class="btn btn-small" id="votd-share">Share</button></div>
     </section>
     ${last ? `<section class="card"><div class="card-label">Continue reading</div>
       <div class="row"><strong style="font-size:18px">${formatReference(last.book, last.chapter)}</strong><span class="spacer"></span><a class="btn btn-primary" href="${readHref(last.book, last.chapter)}">Continue</a></div></section>`
@@ -306,6 +347,21 @@ function renderToday() {
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
     </div>`;
+  main.querySelector('[data-install]')?.addEventListener('click', async () => {
+    if (await promptInstall()) toast('Installed! Open Bible from your home screen.');
+    renderToday();
+  });
+  main.querySelector('[data-backup-now]')?.addEventListener('click', () => {
+    exportBackup();
+    toast('Backup downloaded. Keep the file somewhere safe.');
+    renderToday();
+  });
+  main.querySelectorAll('[data-dismiss]').forEach((b) =>
+    b.addEventListener('click', () => {
+      store.update((s) => (s.dismissed = { ...(s.dismissed || {}), [b.dataset.dismiss]: new Date().toISOString() }));
+      renderToday();
+    }),
+  );
   document.getElementById('votd-image').onclick = () => openImageDialog(dialog, { text: votdText, reference: `${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})` });
   document.getElementById('votd-related').onclick = () => openCrossRefsDialog(dialog, bible, ref.book, ref.chapter, [ref.verse], translation().abbr);
   document.getElementById('votd-share').onclick = () => shareText(`“${votdText}”\n— ${formatReference(ref.book, ref.chapter, verses)} (${translation().abbr})`);
@@ -385,7 +441,7 @@ function renderReader() {
     const hl = st.highlights[key];
     const variant = variantMap.get(key);
     const icons = `${st.bookmarks[key] ? '<span class="verse-icon" title="Bookmarked">🔖</span>' : ''}${st.notes[key] ? `<a class="verse-icon" href="#" data-note="${v}" title="View note" aria-label="View note">📝</a>` : ''}`;
-    const mark = variant ? `<a class="variant-mark" href="${studyVerseHref(book, chapter, v)}" title="Manuscripts differ in this verse" aria-label="Manuscript differences">†</a>` : '';
+    const mark = variant ? `<a class="variant-mark" data-advanced href="${studyVerseHref(book, chapter, v)}" title="Manuscripts differ in this verse" aria-label="Manuscript differences">†</a>` : '';
     const body = text ? escapeHtml(text) : `<span class="omitted">Not included in the ${abbr}: this verse is found only in later manuscripts.</span>`;
     return `<span class="verse${selection.has(v) ? ' selected' : ''}" data-v="${v}" ${hl ? `data-hl="${hl}"` : ''} tabindex="0"><sup>${v}</sup>${body}${mark}${icons}</span>`;
   };
@@ -405,7 +461,7 @@ function renderReader() {
       <a class="icon-btn" ${prev ? `href="${readHref(prev.book, prev.chapter)}"` : 'aria-disabled="true"'} aria-label="Previous chapter">${ICONS.prev}</a>
       <button class="chapter-title-btn" id="picker-btn" aria-haspopup="dialog"><span>${formatReference(book, chapter)}</span> ${ICONS.down}</button>
       <button class="btn btn-small reader-tool" id="translation-btn" aria-label="Translation: ${translation().name}${parallel ? ` with ${parallelAbbr}` : ''}" title="Change translation">${abbr}${parallel ? `<span class="tool-sub"> | ${parallelAbbr}</span>` : ''}</button>
-      <button class="btn btn-small reader-tool" id="original-btn" aria-pressed="${original}" title="Show the original ${book < 39 ? 'Hebrew' : 'Greek'} word by word">${book < 39 ? 'עב' : 'Ελ'}<span class="tool-label"> Original</span></button>
+      <button class="btn btn-small reader-tool" id="original-btn" data-advanced aria-pressed="${original}" title="Show the original ${book < 39 ? 'Hebrew' : 'Greek'} word by word">${book < 39 ? 'עב' : 'Ελ'}<span class="tool-label"> Original</span></button>
       <button class="icon-btn" id="speak-btn" aria-label="Read aloud" title="Read aloud">${speaking ? ICONS.stop : ICONS.play}</button>
       <a class="icon-btn" ${next ? `href="${readHref(next.book, next.chapter)}"` : 'aria-disabled="true"'} aria-label="Next chapter">${ICONS.next}</a>
     </div>
@@ -448,7 +504,7 @@ function renderReader() {
       .catch(() => toast('Could not load the second translation.'));
   }
 
-  if (!original && st.settings.crossRefs) {
+  if (!original && st.settings.crossRefs && st.settings.mode !== 'simple') {
     loadCrossRefs(book)
       .then((data) => {
         if (current.book !== book || current.chapter !== chapter || route().view !== 'read') return;
@@ -579,8 +635,18 @@ actionBar.addEventListener('click', async (e) => {
     renderReader();
     return;
   }
-  if (!btn) return;
-  switch (btn.dataset.action) {
+  if (btn) runAction(btn.dataset.action);
+});
+
+/** Run a verse action on the current selection (from the action bar or the More sheet). */
+async function runAction(action) {
+  const verses = [...selection].sort((a, b) => a - b);
+  const keys = verses.map((v) => verseKey(current.book, current.chapter, v));
+  if (!verses.length) return;
+  switch (action) {
+    case 'more':
+      openMoreSheet(dialog, { mode: store.get().settings.mode, reference: formatReference(current.book, current.chapter, verses), onPick: runAction });
+      break;
     case 'bookmark': {
       const remove = keys.every((k) => store.get().bookmarks[k]);
       store.update((st) => keys.forEach((k) => (remove ? delete st.bookmarks[k] : (st.bookmarks[k] = Date.now()))));
@@ -637,7 +703,7 @@ actionBar.addEventListener('click', async (e) => {
       clearSelection();
       break;
   }
-});
+}
 
 async function shareText(text) {
   if (navigator.share) {
@@ -1015,7 +1081,10 @@ main.addEventListener('click', (e) => {
 /* ---------- Boot ---------- */
 
 document.getElementById('settings-btn').onclick = openSettings;
-dialog.addEventListener('close', () => (dialog.innerHTML = ''));
+// The close event fires asynchronously; if another dialog was opened in the meantime, keep its content.
+dialog.addEventListener('close', () => {
+  if (!dialog.open) dialog.innerHTML = '';
+});
 window.addEventListener('hashchange', router);
 applySettings();
 router();
@@ -1026,6 +1095,12 @@ Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
     variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
     bible = await loadTranslation(translation().id).catch(() => loadTranslation('kjv'));
     router();
+    recordVisit(store);
+    if (!store.get().onboarded) showTour();
+    if (userDataCount(store.get()) > 0 && !persistenceAsked) {
+      persistenceAsked = true;
+      requestPersistence();
+    }
     checkReminder(store, { title: 'Time for your Bible reading', body: 'You haven’t read today yet. Open today’s verse and reading plan.' });
   })
   .catch(() => {

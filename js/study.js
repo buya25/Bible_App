@@ -108,7 +108,7 @@ export async function renderWordPage(main, strong, bible, abbr) {
   main.innerHTML = '<div class="loading">Loading word study…</div>';
   const found = await loadLexiconEntry(key).catch(() => null);
   if (!found) {
-    main.innerHTML = `<div class="empty">No dictionary entry for ${escapeHtml(strong)}. <a href="#/study">Back to dictionary</a></div>`;
+    main.innerHTML = `<div class="empty">No dictionary entry for ${escapeHtml(strong)}. <a href="#/study/dictionary">Back to the Hebrew & Greek dictionary</a></div>`;
     return;
   }
   const { entry } = found;
@@ -124,7 +124,7 @@ export async function renderWordPage(main, strong, bible, abbr) {
       })
       .join('');
   main.innerHTML = `
-    <p><a href="#/study">← Dictionary</a></p>
+    <p><a href="#/study/dictionary">← Hebrew & Greek dictionary</a></p>
     <section class="card word-page">
       ${wordHeader(found.key, entry)}
       <h3>Definition</h3>
@@ -238,13 +238,14 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId,
 
 export async function renderStudyHome(main, tab, params, context = {}) {
   document.title = 'Study — Bible';
-  const tabs = [['dictionary', 'Hebrew & Greek'], ['people', 'People & places'], ['topics', 'Topics'], ['bible-dictionary', 'Bible dictionary'], ['maps', 'Maps'], ['timeline', 'Timeline'], ['differences', 'Manuscripts'], ['about', 'About']];
+  const tabs = [['home', 'Overview'], ['topics', 'Topics'], ['bible-dictionary', 'Bible dictionary'], ['people', 'People & places'], ['maps', 'Maps'], ['timeline', 'Timeline'], ['dictionary', 'Hebrew & Greek'], ['differences', 'Manuscripts'], ['about', 'About']];
   main.innerHTML = `
     <h1>Study</h1>
-    <div class="tabs" role="tablist">${tabs.map(([id, label]) => `<a role="tab" class="tab-link" aria-selected="${id === tab}" href="#/study/${id}">${label}</a>`).join('')}</div>
+    <div class="tabs" role="tablist">${tabs.map(([id, label]) => `<a role="tab" class="tab-link" aria-selected="${id === tab}" href="#/study${id === 'home' ? '' : `/${id}`}">${label}</a>`).join('')}</div>
     <div id="study-panel"><div class="loading">Loading…</div></div>`;
   const panel = document.getElementById('study-panel');
-  if (tab === 'about') panel.innerHTML = ABOUT_HTML;
+  if (tab === 'home') panel.innerHTML = STUDY_HOME_HTML;
+  else if (tab === 'about') panel.innerHTML = ABOUT_HTML;
   else if (tab === 'people') await renderNamesHome(panel, params);
   else if (tab === 'topics') await renderTopicsHome(panel, params);
   else if (tab === 'bible-dictionary') await renderDictionaryHome(panel, params);
@@ -341,6 +342,20 @@ function describeCounts(x) {
   if (x.m) parts.push(`${x.m} word${x.m === 1 ? '' : 's'} only in older manuscripts`);
   return parts.join(' · ');
 }
+
+const STUDY_TOOLS = [
+  ['topics', 'Topics', 'What does the Bible say about prayer, money, fear, marriage…? Verses grouped by theme.'],
+  ['bible-dictionary', 'Bible dictionary', 'Customs, objects, places and ideas explained: the tabernacle, Pharisees, a denarius.'],
+  ['people', 'People & places', 'Everyone and everywhere in the Bible, with family trees, maps and every mention.'],
+  ['maps', 'Maps', 'See where each chapter happens.'],
+  ['timeline', 'Timeline', 'Events, kings, judges and prophets in order.'],
+  ['dictionary', 'Hebrew & Greek', 'Look up any original word: its meaning and everywhere it is used.'],
+  ['differences', 'Manuscripts', 'Where ancient copies differ, and verses missing from the oldest manuscripts.'],
+];
+
+const STUDY_HOME_HTML = `
+  <p class="muted">Tools to understand what you read. Tip: tap any verse while reading and choose <strong>Study</strong> to compare translations, see the original words and read commentaries.</p>
+  <div class="tool-grid">${STUDY_TOOLS.map(([id, title, text]) => `<a class="card tool-card" href="#/study/${id}"><strong>${title}</strong><span class="muted small">${text}</span></a>`).join('')}</div>`;
 
 const ABOUT_HTML = `
   <div class="card prose">

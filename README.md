@@ -31,6 +31,8 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Daily reminders:** a notification after your chosen time if you haven't read yet (and in the background on supported installed apps), plus **Add to calendar** for a daily reminder on any device.
 - **Library:** all your highlights, bookmarks, notes, memory verses, prayers and reading history in one place.
 - **Comfort settings:** light, sepia and dark themes (or follow the system), serif or sans font, text size and line spacing.
+- **Simple or Full study mode:** a welcome tour lets people choose. Simple hides the original languages, commentaries, cross references and other study tools; switch any time in Settings. Less-used verse actions sit under **More…**.
+- **Keeping data safe:** the app asks the browser to protect its storage, suggests installing it to the home screen (with iPhone instructions), and reminds people to download a backup once they have notes worth keeping. Settings shows whether storage is protected.
 - **Private by design:** your data stays in your browser. Export and import a backup file to move it between devices.
 - **Works offline:** your current translation is cached on the device after the first visit. **Settings → Download everything** caches all translations, the original texts and the dictionary.
 - **Responsive layout:** bottom tabs on phones, wider card layouts on tablets, and top navigation with a comfortable reading width on desktop.
@@ -81,6 +83,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/topics.js` | Topical index and Bible dictionary: search, browse and pages |
 | `js/maps.js`, `js/timeline.js` | Maps of places; timeline of events and reigns |
 | `js/memory.js`, `js/prayers.js`, `js/verse-image.js`, `js/reminders.js` | Memory verses, prayer journal, verse images, reminders |
+| `js/safety.js`, `js/onboarding.js` | Storage protection, install and backup suggestions; welcome tour, More menu, Simple mode |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |
