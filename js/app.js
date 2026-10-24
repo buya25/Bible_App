@@ -236,6 +236,10 @@ function router() {
 
 function renderStudy(parts, params) {
   window.scrollTo(0, 0);
+  // Each visit renders into its own element, so a slow page that finishes loading after the
+  // reader has moved on writes into a detached element instead of replacing the new page.
+  const main = document.createElement('div');
+  document.getElementById('main').replaceChildren(main);
   if (parts[0] === 'word' && parts[1]) return renderWordPage(main, parts[1], bible, translation().abbr);
   if (parts[0] === 'topic' && parts[1]) return renderTopicPage(main, parts[1], bible, translation().abbr).catch(() => (main.innerHTML = '<div class="empty">Could not load this topic. Check your connection.</div>'));
   if (parts[0] === 'entry' && parts[1]) return renderDictionaryPage(main, parts[1]).catch(() => (main.innerHTML = '<div class="empty">Could not load this entry. Check your connection.</div>'));
