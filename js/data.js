@@ -3,7 +3,7 @@
 
 const cache = new Map();
 
-function load(path) {
+export function load(path) {
   if (!cache.has(path)) {
     const promise = fetch(path).then((r) => {
       if (!r.ok) throw new Error(`${path}: ${r.status}`);

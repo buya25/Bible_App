@@ -7,6 +7,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Five translations:** KJV, World English Bible (WEB), Berean Standard Bible (BSB), Young's Literal Translation (YLT) and the American Standard Version (ASV), all public domain.
 - **Original Hebrew and Greek:** turn on **Original** in the reader to see each verse word by word, with the original word, transliteration, literal English meaning and Strong's number. Hebrew reads right to left.
 - **Dictionary (lexicon):** tap any original word for its definition and grammar, how translators render it, how often it occurs, and every verse where it is used. You can also search by English word, Hebrew/Greek word or Strong's number.
+- **People & places dictionary:** 3,129 people, 1,006 places and 102 other names (angels and other spiritual beings, months, festivals, titles). Each entry has a short summary, family links (parents, siblings, spouses, children), the name in Hebrew/Greek, a map link for places, and every verse where it appears. Search by any form of a name (Abram/Abraham, Saul/Paul), browse A–Z, or filter people, places and other. Names are also recognised in the Search tab, in verse studies, and when you tap a name in the original text.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
@@ -55,10 +56,12 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/votd.js` | Verse of the day |
 | `js/study.js` | Interlinear, word studies, verse comparison, manuscript differences |
 | `js/data.js` | Loading and caching of data files; dictionary search |
+| `js/names.js` | People & places dictionary: search, browse and entry pages |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |
 | `data/lexicon/` | Hebrew/Greek dictionary with usage statistics, split by Strong's number |
+| `data/names/` | People & places (one file per letter, plus a search index) |
 | `data/variants.json` | Verses where manuscripts differ |
 | `tools/build_data.py` | Regenerates everything in `data/` from the open sources |
 | `sw.js`, `manifest.webmanifest` | Offline support and installability |
@@ -70,7 +73,9 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | KJV | [thiagobodruk/bible](https://github.com/thiagobodruk/bible) | Public domain |
 | BSB, YLT, ASV | [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases) | Public domain |
 | WEB | [seven1m/open-bibles](https://github.com/seven1m/open-bibles) | Public domain |
-| Hebrew OT (TAHOT), Greek NT (TAGNT), lexicons (TBESH, TBESG) | [STEPBible.org](https://github.com/STEPBible/STEPBible-Data), Tyndale House, Cambridge | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Hebrew OT (TAHOT), Greek NT (TAGNT), lexicons (TBESH, TBESG), people & places (TIPNR) | [STEPBible.org](https://github.com/STEPBible/STEPBible-Data), Tyndale House, Cambridge | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+
+STEPBible adapted the people & places summaries from AI-generated text, and the app says so on each entry. Map coordinates come from [OpenBible.info](https://www.openbible.info/geo/) via STEPBible.
 
 The STEPBible data is reformatted, not reworded. `tools/build_data.py` keeps the needed fields, reduces the lexicon HTML to bold, italics, line breaks and verse links, and maps references to KJV verse numbering. To regenerate the data, clone the sources into one folder and run:
 

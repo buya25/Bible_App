@@ -4,6 +4,7 @@ import { verseOfTheDay } from './votd.js';
 import { store } from './store.js';
 import { escapeHtml, readHref, toast } from './util.js';
 import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
+import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
 import { interlinearHtml, interlinearLegend, openWordDialog, renderWordPage, renderVersePage, renderStudyHome, studyVerseHref, wordContext } from './study.js';
 
 const main = document.getElementById('main');
@@ -201,6 +202,11 @@ function router() {
 function renderStudy(parts, params) {
   window.scrollTo(0, 0);
   if (parts[0] === 'word' && parts[1]) return renderWordPage(main, parts[1], bible, translation().abbr);
+  if (parts[0] === 'name' && parts[1]) {
+    return renderNamePage(main, parts.slice(1).join('/'), bible, translation().abbr).catch(() => {
+      main.innerHTML = '<div class="empty">Could not load this entry. Check your connection.</div>';
+    });
+  }
   if (parts[0] === 'verse' && parts[3]) {
     const book = Number(parts[1]);
     const chapter = Number(parts[2]);
@@ -210,7 +216,7 @@ function renderStudy(parts, params) {
       });
     }
   }
-  return renderStudyHome(main, ['dictionary', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params).catch(() => {
+  return renderStudyHome(main, ['dictionary', 'people', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params).catch(() => {
     main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
   });
 }
@@ -726,6 +732,20 @@ function renderSearch(params) {
   results.innerHTML = `${refHtml}
     <p class="muted small">${total ? `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found in the ${translation().abbr}${total > hits.length ? ` · showing first ${hits.length}` : ''}` : ref ? '' : 'No verses found. Try fewer words or a different spelling.'}</p>
     ${hits.map((h) => `<a class="result" href="${readHref(h.book, h.chapter, h.verse)}"><strong>${formatReference(h.book, h.chapter, [h.verse])}</strong><span>${highlightTerms(escapeHtml(h.text), q)}</span></a>`).join('')}`;
+
+  // A name search ("Ruth", "Bethlehem") also shows matching people & places.
+  if (!q.includes('"') && q.split(/\s+/).length <= 3) {
+    const lower = q.toLowerCase();
+    loadNamesIndex()
+      .then((index) => {
+        const matches = searchNames(index, q).filter((r) => r[1].toLowerCase() === lower || r[5].toLowerCase().split('|').includes(lower));
+        if (!matches.length || !results.isConnected) return;
+        results.insertAdjacentHTML('afterbegin', `<section class="card names-card"><div class="card-label">People & places</div>
+          ${matches.slice(0, 4).map(nameRowHtml).join('')}
+          ${matches.length > 4 ? `<p class="small"><a href="#/study/people?q=${encodeURIComponent(q)}">All ${matches.length} named “${escapeHtml(q)}” →</a></p>` : ''}</section>`);
+      })
+      .catch(() => {});
+  }
 }
 
 /* ---------- Plans ---------- */

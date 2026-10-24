@@ -4,6 +4,7 @@ import { BOOKS, formatReference } from './bible.js';
 import { loadTranslationList, loadTranslation, loadOriginal, loadVariants, loadLexiconIndex, loadLexiconEntry, searchLexicon, unpackRef, normalizeStrong } from './data.js';
 import { decodeMorph } from './morph.js';
 import { escapeHtml, readHref } from './util.js';
+import { renderNamesHome, namesForStrong, nameHref, typeLabel } from './names.js';
 
 const STATUS = {
   1: { cls: 'w-other', label: 'Found in other ancient sources (e.g. Septuagint or Dead Sea Scrolls), not in the standard Hebrew text' },
@@ -89,6 +90,11 @@ export async function openWordDialog(dialog, word, lang) {
          ${found.entry.u ? `<h3>How it is translated</h3>${usageBars(found.entry)}` : ''}
          <p><a class="btn btn-primary" href="${wordHref(found.key)}">Full word study & all verses →</a></p>`
       : '<p class="muted">No dictionary entry was found for this word.</p>'}`;
+  const people = await namesForStrong(strong).catch(() => []);
+  if (people.length && dialog.querySelector('.occurrence')) {
+    dialog.querySelector('.occurrence').insertAdjacentHTML('beforeend', `<div class="name-box"><span class="muted small">This is a name:</span>
+      ${people.slice(0, 3).map((r) => `<a class="chip-link" href="${nameHref(r[0])}"><strong>${escapeHtml(r[1])}</strong> <span class="muted small">${escapeHtml(typeLabel(r))} · ${escapeHtml(r[3])}</span></a>`).join('')}</div>`);
+  }
 }
 
 /** Full word-study page: definition, translation statistics and every occurrence. */
@@ -174,9 +180,16 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
   const ref = formatReference(book, chapter, verses);
   document.title = `${ref} — Study`;
   const lang = original.lang;
+  const namesIn = async (words) => {
+    const seen = new Map();
+    for (const w of words) for (const r of await namesForStrong(w[3]).catch(() => [])) seen.set(r[0], r);
+    return [...seen.values()];
+  };
+  const verseNames = await Promise.all(verses.map((v) => namesIn(original.chapters[chapter - 1][v - 1]?.w || [])));
   const sections = verses
-    .filter((v) => v <= translations[0].books[book][chapter - 1].length)
-    .map((v) => {
+    .map((v, idx) => [v, idx])
+    .filter(([v]) => v <= translations[0].books[book][chapter - 1].length)
+    .map(([v, idx]) => {
       const o = original.chapters[chapter - 1][v - 1];
       const compare = translations
         .map((t, i) => {
@@ -193,6 +206,7 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
           <p class="original-line" ${lang === 'hbo' ? 'dir="rtl" lang="he"' : 'lang="grc"'}>${o.w.map((w) => `<span class="${STATUS[w[5]]?.cls || ''}">${escapeHtml(w[0])}</span>`).join(' ')}</p>
           ${interlinearHtml(o.w, lang)}
           ${interlinearLegend(lang)}
+          ${verseNames[idx].length ? `<h3>People & places</h3><div class="rel-items">${verseNames[idx].map((r) => `<a class="chip-link" href="${nameHref(r[0])}" title="${escapeHtml(r[3])}">${escapeHtml(r[1])} <span class="muted small">${escapeHtml(typeLabel(r))}</span></a>`).join('')}</div>` : ''}
           <h3>Manuscript differences</h3>
           ${differenceSummary(o.w, lang, o.n)}
         </section>`;
@@ -213,13 +227,14 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
 
 export async function renderStudyHome(main, tab, params) {
   document.title = 'Study — Bible';
-  const tabs = [['dictionary', 'Dictionary'], ['differences', 'Manuscript differences'], ['about', 'About the texts']];
+  const tabs = [['dictionary', 'Dictionary'], ['people', 'People & places'], ['differences', 'Manuscript differences'], ['about', 'About the texts']];
   main.innerHTML = `
     <h1>Study</h1>
     <div class="tabs" role="tablist">${tabs.map(([id, label]) => `<a role="tab" class="tab-link" aria-selected="${id === tab}" href="#/study/${id}">${label}</a>`).join('')}</div>
     <div id="study-panel"><div class="loading">Loading…</div></div>`;
   const panel = document.getElementById('study-panel');
   if (tab === 'about') panel.innerHTML = ABOUT_HTML;
+  else if (tab === 'people') await renderNamesHome(panel, params);
   else if (tab === 'differences') await renderDifferences(panel, params);
   else await renderDictionary(panel, params);
 }
@@ -338,5 +353,6 @@ const ABOUT_HTML = `
   </div>
   <div class="card prose small">
     <h2 style="margin-top:0">Sources</h2>
-    <p>Hebrew and Greek texts, glosses, grammar, manuscript data and lexicons come from <a href="https://github.com/STEPBible/STEPBible-Data" target="_blank" rel="noopener">STEPBible.org</a> (Tyndale House, Cambridge), licensed CC BY 4.0. They are reformatted for this app. English glosses are based on the Berean Study Bible. Translations are in the public domain.</p>
+    <p>Hebrew and Greek texts, glosses, grammar, manuscript data, lexicons and the people & places dictionary come from <a href="https://github.com/STEPBible/STEPBible-Data" target="_blank" rel="noopener">STEPBible.org</a> (Tyndale House, Cambridge), licensed CC BY 4.0. They are reformatted for this app. English glosses are based on the Berean Study Bible. STEPBible adapted the people & places summaries from AI-generated text.</p>
+    <p>Map locations come from <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> via STEPBible. Many ancient sites are uncertain. Translations are in the public domain.</p>
   </div>`;

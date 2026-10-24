@@ -15,6 +15,8 @@ Outputs (all under data/):
   lexicon/<H|G><n>.json    lexicon entries with usage statistics, chunked by Strong's number
   lexicon/index.json       compact search index for the dictionary
   variants.json            verses where the Greek/Hebrew manuscript traditions differ
+  names/<letter>.json      people, places and other named things (STEPBible TIPNR)
+  names/index.json         compact search index for people & places
 
 STEPBible data is reformatted (not reworded): fields are selected, HTML is reduced to
 <b>/<i>/<br> and verse links, and references are mapped to KJV versification.
@@ -326,6 +328,173 @@ def build_lexicon(usage):
     print(f'  lexicon: {len(entries)} entries in {len(chunks)} chunks; {len(missing)} used strongs without entry e.g. {missing[:5]}')
 
 
+# ---------------------------------------------------------------- people & places
+
+def parse_step_refs(text, kjv):
+    """'Gen.17.5; Gen.17.23a; LXX Gen.4.8' -> packed refs (book*1e6 + chapter*1e3 + verse) valid in KJV numbering."""
+    out = []
+    for part in text.split(';'):
+        m = re.match(r'^\s*(\w+)\.(\d+)\.(\d+)[a-z]?\s*$', part)
+        if not m or m.group(1) not in STEP_BOOK:
+            continue  # skips LXX-only references and malformed entries
+        b, c, v = STEP_BOOK[m.group(1)], int(m.group(2)), int(m.group(3))
+        if c <= len(kjv[b]) and 1 <= v <= len(kjv[b][c - 1]):
+            out.append(b * 1000000 + c * 1000 + v)
+    return out
+
+
+def article_html(s):
+    """Reduce an @Article/@Short text to paragraphs with verse links."""
+    def ref(m):
+        target = m.group(1).split(';')[0].strip()
+        rm = re.match(r'^(\w+)\.(\d+)(?:\.(\d+))?', target)
+        label = html.escape(strip_tags(m.group(2)))
+        if rm and rm.group(1) in STEP_BOOK:
+            return f'<a data-ref="{STEP_BOOK[rm.group(1)]}.{rm.group(2)}.{rm.group(3) or ""}">{label}</a>'
+        return label
+    parts = re.split(r'(<ref="[^"]*">.*?</ref>)', s)
+    out = []
+    for part in parts:
+        m = re.match(r'<ref="([^"]*)">(.*?)</ref>', part)
+        if m:
+            out.append(ref(m))
+        else:
+            out.append(html.escape(html.unescape(re.sub(r'<(?!BR\b|br\b)[^>]+>', '', part)), quote=False))
+    text = ''.join(out)
+    text = re.sub(r'&lt;br\s*/?&gt;|<br\s*/?>', '\n', text, flags=re.I)
+    return ''.join(f'<p>{p.strip()}</p>' for p in text.split('\n') if p.strip())
+
+
+def split_ids(field):
+    """'Terah@Gen.11.24-Luk + ' or 'A@x, B@y(d)' -> [[id, note]]"""
+    out = []
+    for item in re.split(r',|\+', field):
+        item = item.strip()
+        if '@' not in item:
+            continue
+        m = re.match(r'^(.*?)(?:\((\w|\?)\))?$', item)
+        note = {'d': 'descendant', 'a': 'ancestor', 'f': 'founder', '?': 'uncertain'}.get(m.group(2) or '', '')
+        out.append([m.group(1).strip(), note] if note else [m.group(1).strip()])
+    return out
+
+
+def build_names(kjv):
+    path = glob.glob(os.path.join(SRC, 'STEPBible-Data/Proper Nouns/TIPNR*.txt'))[0]
+    with open(path, encoding='utf-8-sig') as f:
+        lines = f.read().split('\n')
+    entries = {}
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        i += 1
+        if not line.startswith('$=========='):
+            continue
+        section = line.strip('$= \t')
+        if section.startswith('EXCLUDED') or i >= len(lines):
+            continue
+        cols = lines[i].rstrip('\t').split('\t')
+        if '@' not in cols[0] or '=' not in cols[0]:
+            continue
+        uid, ustrong = cols[0].split('=', 1)
+        kind = 'place' if section.startswith('PLACE') else 'person' if section.startswith('PERSON') else 'other'
+        raw_name = uid.split('@')[0].replace('_', ' ')
+        # Anonymous people kept for genealogy links ("Unnamed#3", "father of Lazarus").
+        anonymous = raw_name.startswith('Unnamed') or raw_name[:1].islower()
+        e = {'n': 'Unnamed' if raw_name.startswith('Unnamed') else raw_name, 'k': kind, 't': cols[8].strip() if len(cols) > 8 else '', 'u': ustrong.strip()}
+        if kind == 'person':
+            e['d'] = cols[1].strip()
+            rel = {}
+            for key, col in (('parents', 2), ('siblings', 3), ('partners', 4), ('children', 5)):
+                ids = split_ids(cols[col]) if len(cols) > col else []
+                if ids:
+                    rel[key] = ids
+            if rel:
+                e['rel'] = rel
+            if len(cols) > 6 and cols[6].strip():
+                e['tribe'] = cols[6].strip()
+        elif kind == 'place':
+            rel = {}
+            for key, col in (('founders', 2), ('residents', 3)):
+                ids = split_ids(cols[col]) if len(cols) > col else []
+                if ids:
+                    rel[key] = ids
+            if rel:
+                e['rel'] = rel
+            gm = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', cols[4] if len(cols) > 4 else '')
+            if gm:
+                e['geo'] = [float(gm.group(1)), float(gm.group(2))]
+            if len(cols) > 6 and cols[6].strip() not in ('', '>'):
+                e['area'] = cols[6].strip()
+        else:
+            e['d'] = cols[1].strip()
+        names, refs, own_strongs = [], set(), set()
+        # Sub-records until the next "$" line.
+        while i < len(lines) and not lines[i].startswith('$'):
+            sub = lines[i].rstrip('\t')
+            i += 1
+            if sub.startswith('– ') and not sub.startswith('– Total'):
+                sc = sub.split('\t')  # significance, unique name, dStrong«eStrong=original, translated name, refs
+                if len(sc) < 5:
+                    continue
+                # Combined names ("Ish-tob" = H0376G«…+H2897«…) join ordinary words with the name;
+                # only the part that is this entry's own name identifies it.
+                parts = [x.partition('«')[0].strip() for x in sc[2].split('+')]
+                combined = len(parts) > 1
+                dstrong = ustrong.strip() if ustrong.strip() in parts else parts[-1]
+                if not re.fullmatch(r'[HG]\d{4}[A-Za-z]?', dstrong) or dstrong[1:5] == '0000':
+                    dstrong = ''  # placeholder for names not tagged in the original text
+                orig = ' '.join(x.split('=', 1)[1] for x in sc[2].split('+') if '=' in x)
+                translated = re.sub(r'\s*=.*$', '', sc[3].split(';')[0]).strip()
+                item = [translated, orig.strip(), dstrong]
+                if dstrong and not combined:
+                    own_strongs.add(dstrong)
+                if translated and not re.fullmatch(r'[\[\]\s]*', translated) and item not in names:
+                    names.append(item)
+                refs.update(parse_step_refs(sc[4], kjv))
+            else:
+                for key, field in (('@Briefest=', 'bb'), ('@Brief=', 'b'), ('@Short=', 's'), ('@Article=', 'a')):
+                    if sub.startswith(key):
+                        value = sub[len(key):].strip()
+                        if value:
+                            e[field] = article_html(value) if field in ('a', 's') else strip_tags(value)
+        e['names'] = names
+        e['strongs'] = sorted(own_strongs)
+        e['r'] = sorted(refs)
+        if anonymous:
+            e['anon'] = 1
+        entries[uid] = e
+
+    # Keep only relations that point at known entries.
+    for e in entries.values():
+        for key, ids in list(e.get('rel', {}).items()):
+            e['rel'][key] = [x for x in ids if x[0] in entries]
+            if not e['rel'][key]:
+                del e['rel'][key]
+        if 'rel' in e and not e['rel']:
+            del e['rel']
+
+    chunks = defaultdict(dict)
+    index = []
+    for uid, e in entries.items():
+        first = uid[0].upper()
+        chunks[first if first.isalpha() else '_'][uid] = e
+        alt = {}
+        for n in e['names']:
+            for a in n[0].split(','):
+                a = re.sub(r'\s+', ' ', re.sub(r'[()/]', ' ', a)).strip()
+                if a and a.lower() != e['n'].lower() and a.lower() not in alt:
+                    alt[a.lower()] = a
+        alt = sorted(alt.values())
+        strongs = e.pop('strongs')
+        index.append([uid, e['n'], e['k'], e.get('b') or e.get('d') or e.get('t', ''), len(e['r']), '|'.join(alt), '|'.join(strongs), e['t'], e.get('anon', 0)])
+    for name, data in chunks.items():
+        write_json(f'names/{name}.json', data)
+    index.sort(key=lambda x: (x[1].lower(), -x[4]))
+    write_json('names/index.json', index)
+    kinds = Counter(e['k'] for e in entries.values())
+    print(f'  names: {len(entries)} entries {dict(kinds)}, {sum(1 for e in entries.values() if "geo" in e)} with map location')
+
+
 if __name__ == '__main__':
     print('translations')
     kjv, meta = build_translations()
@@ -334,6 +503,8 @@ if __name__ == '__main__':
     usage = build_original(kjv)
     print('lexicon')
     build_lexicon(usage)
+    print('people & places')
+    build_names(kjv)
     files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json'), recursive=True)
                    if not p.endswith('manifest.json'))
     write_json('manifest.json', files)
