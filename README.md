@@ -44,7 +44,15 @@ npm start            # python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-To deploy, upload the folder to any static host, such as GitHub Pages, Netlify or Cloudflare Pages.
+### Publishing on GitHub Pages
+
+`.github/workflows/pages.yml` publishes the app whenever `main` changes:
+
+1. Merge this work into a `main` branch.
+2. In the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. Push to `main`, or run the workflow from the **Actions** tab. The site appears at `https://<user>.github.io/<repo>/`.
+
+Any other static host works too (Netlify, Cloudflare Pages): upload `index.html`, `sw.js`, `manifest.webmanifest`, and the `css`, `js`, `data`, `icons` and `vendor` folders.
 
 ## Tests
 

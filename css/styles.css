@@ -453,7 +453,8 @@ textarea { width: 100%; min-height: 160px; padding: 12px; border-radius: 12px; b
   .action-bar:not([hidden]) { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 16px; }
   .action-ref { grid-column: 1 / -1; }
   .swatches { margin-bottom: 0; }
-  .actions { justify-content: flex-end; }
+  /* Wrap instead of scrolling so every action is visible. */
+  .actions { min-width: 0; flex-wrap: wrap; justify-content: flex-end; overflow: visible; }
   .actions button { flex: 0 0 auto; }
   .book-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .tool-label { display: inline; }
