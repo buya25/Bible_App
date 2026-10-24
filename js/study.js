@@ -6,6 +6,7 @@ import { decodeMorph } from './morph.js';
 import { escapeHtml, readHref } from './util.js';
 import { renderNamesHome, namesForStrong, nameHref, typeLabel } from './names.js';
 import { loadCrossRefs, crossRefListHtml, bindMoreButtons } from './crossrefs.js';
+import { renderCommentaryPanel } from './commentary.js';
 
 const STATUS = {
   1: { cls: 'w-other', label: 'Found in other ancient sources (e.g. Septuagint or Dead Sea Scrolls), not in the standard Hebrew text' },
@@ -166,7 +167,7 @@ function differenceSummary(words, lang, notes = []) {
 }
 
 /** Verse study page: compare translations, read the original, see manuscript differences. */
-export async function renderVersePage(main, book, chapter, verseSpec, currentId) {
+export async function renderVersePage(main, book, chapter, verseSpec, currentId, commentary = {}) {
   main.innerHTML = '<div class="loading">Loading…</div>';
   const verses = String(verseSpec)
     .split(',')
@@ -220,7 +221,9 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId)
     <p><a href="${readHref(book, chapter, verses[0])}">← Back to ${escapeHtml(formatReference(book, chapter))}</a></p>
     <h1>${escapeHtml(ref)}</h1>
     ${sections}
+    <section class="card commentary"><h2 style="margin-top:0">Commentary</h2><div id="verse-commentary"><div class="loading">Loading…</div></div></section>
     <p class="small muted"><a href="#/study/about">Why do translations and manuscripts differ?</a></p>`;
+  renderCommentaryPanel(document.getElementById('verse-commentary'), book, chapter, verses, commentary.preferred, commentary.choose).catch(() => {});
   bindMoreButtons(main, currentBible, (btn) => xrefs[chapter - 1][Number(btn.closest('[data-verse]').dataset.verse) - 1]);
   wordContext.lookup = (btn) => {
     const v = Number(btn.closest('[data-verse]').dataset.verse);

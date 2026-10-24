@@ -5,6 +5,8 @@ Usage: python3 tools/build_data.py <sources-dir>
 
 <sources-dir> must contain:
   bible_databases/sources/extras/cross_references.txt   OpenBible.info cross references (CC BY), via scrollmapper
+  commentaries/<id>.en.jsonl.gz                        github.com/joathanmf/bibliaco-dados release classicos-en-2026-10-19
+                                                        (from bible.helloao.org; public domain)
   thiagobodruk/en_kjv.json                              github.com/thiagobodruk/bible (keeps "LORD" small caps)
   bible_databases/formats/json/{BSB,YLT,ASV}.json       github.com/scrollmapper/bible_databases
   open-bibles/eng-web.usfx.xml                          github.com/seven1m/open-bibles
@@ -19,11 +21,14 @@ Outputs (all under data/):
   names/<letter>.json      people, places and other named things (STEPBible TIPNR)
   names/index.json         compact search index for people & places
   crossrefs/<book>.json    related verses for each verse, strongest first (OpenBible.info)
+  commentary/<id>/<book>.json.gz  commentary sections per chapter, gzip-compressed (decompressed in the browser)
+  commentary/index.json    available commentaries
 
 STEPBible data is reformatted (not reworded): fields are selected, HTML is reduced to
 <b>/<i>/<br> and verse links, and references are mapped to KJV versification.
 """
 import glob
+import gzip
 import html
 import json
 import os
@@ -38,6 +43,7 @@ STEP_CODES = ('Gen Exo Lev Num Deu Jos Jdg Rut 1Sa 2Sa 1Ki 2Ki 1Ch 2Ch Ezr Neh E
               'Lam Ezk Dan Hos Jol Amo Oba Jon Mic Nam Hab Zep Hag Zec Mal Mat Mrk Luk Jhn Act Rom 1Co 2Co Gal '
               'Eph Php Col 1Th 2Th 1Ti 2Ti Tit Phm Heb Jas 1Pe 2Pe 1Jn 2Jn 3Jn Jud Rev').split()
 STEP_BOOK = {c: i for i, c in enumerate(STEP_CODES)}
+BOOK_NAMES = [l.split("'")[1] for l in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../js/bible.js')) if l.startswith("  ['")]
 USFX_CODES = ('GEN EXO LEV NUM DEU JOS JDG RUT 1SA 2SA 1KI 2KI 1CH 2CH EZR NEH EST JOB PSA PRO ECC SNG ISA JER '
               'LAM EZK DAN HOS JOL AMO OBA JON MIC NAM HAB ZEP HAG ZEC MAL MAT MRK LUK JHN ACT ROM 1CO 2CO GAL '
               'EPH PHP COL 1TH 2TH 1TI 2TI TIT PHM HEB JAS 1PE 2PE 1JN 2JN 3JN JUD REV').split()
@@ -542,6 +548,54 @@ def build_crossrefs(kjv):
     print(f'  cross references: {kept} kept, {dropped} dropped (no votes or outside KJV numbering)')
 
 
+# ---------------------------------------------------------------- commentaries
+
+COMMENTARIES = [
+    ('matthew-henry', 'Matthew Henry', 'Matthew Henry', 'Commentary on the Whole Bible', '1706–1721',
+     'Devotional and practical: what each passage teaches and how to live it out.'),
+    ('jamieson-fausset-brown', 'JFB', 'Jamieson, Fausset & Brown', 'Commentary Critical and Explanatory', '1871',
+     'Concise verse-by-verse notes on meaning, language and background.'),
+]
+
+
+def write_gz_json(path, data):
+    path = os.path.join(OUT, path)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    raw = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    with open(path, 'wb') as f:
+        f.write(gzip.compress(raw, compresslevel=9, mtime=0))
+
+
+def build_commentaries(kjv):
+    meta = []
+    for cid, short, author, title, years, desc in COMMENTARIES:
+        books = defaultdict(lambda: {'intro': '', 'chapters': {}})
+        with gzip.open(os.path.join(SRC, f'commentaries/{cid}.en.jsonl.gz'), 'rt', encoding='utf-8') as f:
+            for line in f:
+                row = json.loads(line)
+                if row['book'] not in USFX_CODES:
+                    continue
+                b = USFX_CODES.index(row['book'])
+                c, start = row['chapter'], row['start_verse']
+                if c == 0:
+                    books[b]['intro'] = row['text']
+                    continue
+                if c > len(kjv[b]):
+                    continue
+                end = row.get('end_verse') or start
+                end = min(max(end, start), len(kjv[b][c - 1]))
+                books[b]['chapters'].setdefault(str(c), []).append([start, end, row['text'].strip()])
+        for b, data in books.items():
+            for sections in data['chapters'].values():
+                sections.sort(key=lambda x: x[0])
+            write_gz_json(f'commentary/{cid}/{b}.json.gz', data)
+        missing = [BOOK_NAMES[b] for b in range(66) if b not in books]
+        print(f'  {cid}: {len(books)} books{f"; missing {missing}" if missing else ""}')
+        meta.append({'id': cid, 'short': short, 'author': author, 'title': title, 'years': years, 'description': desc,
+                     'books': sorted(books)})
+    write_json('commentary/index.json', meta)
+
+
 if __name__ == '__main__':
     print('translations')
     kjv, meta = build_translations()
@@ -554,6 +608,8 @@ if __name__ == '__main__':
     build_names(kjv)
     print('cross references')
     build_crossrefs(kjv)
-    files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json'), recursive=True)
+    print('commentaries')
+    build_commentaries(kjv)
+    files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json*'), recursive=True)
                    if not p.endswith('manifest.json'))
     write_json('manifest.json', files)

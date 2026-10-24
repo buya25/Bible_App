@@ -308,6 +308,14 @@ select.picker-filter { appearance: auto; }
 .passage.paragraphs .xrefs { display: none; }
 .xref-list { margin-bottom: 8px; }
 
+/* Commentary */
+.commentary .comm-body { font-family: var(--font-reading); line-height: 1.65; font-size: 17px; }
+.comm-section h4 { font-family: var(--font-ui); font-size: 14px; color: var(--accent); margin: 16px 0 6px; }
+.comm-section:first-child h4 { margin-top: 4px; }
+.comm-intro { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.comm-intro summary { font-family: var(--font-ui); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); }
+.comm-tabs button { cursor: pointer; }
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;

@@ -4,6 +4,7 @@ import { verseOfTheDay } from './votd.js';
 import { store } from './store.js';
 import { escapeHtml, readHref, toast } from './util.js';
 import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
+import { openCommentaryDialog } from './commentary.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
 import { interlinearHtml, interlinearLegend, openWordDialog, renderWordPage, renderVersePage, renderStudyHome, studyVerseHref, wordContext } from './study.js';
@@ -213,7 +214,8 @@ function renderStudy(parts, params) {
     const book = Number(parts[1]);
     const chapter = Number(parts[2]);
     if (BOOKS[book] && chapter >= 1 && chapter <= bible.books[book].length) {
-      return renderVersePage(main, book, chapter, parts[3], translation().id).catch(() => {
+      const commentary = { preferred: store.get().settings.commentary, choose: (id) => store.update((s) => (s.settings.commentary = id)) };
+      return renderVersePage(main, book, chapter, parts[3], translation().id, commentary).catch(() => {
         main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
       });
     }
@@ -509,6 +511,10 @@ actionBar.addEventListener('click', async (e) => {
     }
     case 'note':
       openNote(verses);
+      break;
+    case 'commentary':
+      openCommentaryDialog(dialog, current.book, current.chapter, verses, store.get().settings.commentary, (id) => store.update((s) => (s.settings.commentary = id)));
+      clearSelection();
       break;
     case 'xrefs':
       openCrossRefsDialog(dialog, bible, current.book, current.chapter, verses, translation().abbr);
