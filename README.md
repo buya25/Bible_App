@@ -17,7 +17,8 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Timeline:** 250 events and 95 reigns, judges, prophets and periods, grouped into eras from Creation to the early church. It can be filtered to kings, judges or prophets, and explains how the dates were worked out.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
-- **Audio Bible:** tap ▶ in the reader to listen. It uses the device's voices, picking a deep male voice automatically, with styles **Deep & calm**, **British narrator** and **Natural**. Reading continues from chapter to chapter and highlights each verse. A mini player stays available while you browse, with a sleep timer, lock-screen controls where supported, and an optional soft background (pad or gentle rain, generated without audio files).
+- **Bible Stories:** 155 stories in order, from Creation to the new heaven and earth, in 13 sections (Abraham, Joseph, Moses, David, the life of Jesus, parables, the early church…). Each has a one-line introduction and the story's text as flowing paragraphs, in an easy modern translation (BSB) by default with one-tap switching. You can listen to just that story, follow your progress, search, and the Today screen suggests the next story.
+- **Audio Bible:** tap ▶ in the reader to listen. It uses the device's voices, preferring natural-sounding male voices, with styles **Natural**, **Calm & slower** and **British narrator**, plus a guide for installing better voices. Reading continues from chapter to chapter and highlights each verse. A mini player stays available while you browse, with a sleep timer, lock-screen controls where supported, and an optional soft background (pad or gentle rain, generated without audio files).
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
 - **Highlights:** five colours, applied to one verse or several at once.
 - **Notes and bookmarks:** attach your own reflections to any verse.
@@ -87,6 +88,8 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/maps.js`, `js/timeline.js` | Maps of places; timeline of events and reigns |
 | `js/memory.js`, `js/prayers.js`, `js/verse-image.js`, `js/reminders.js` | Memory verses, prayer journal, verse images, reminders |
 | `js/safety.js`, `js/onboarding.js` | Storage protection, install and backup suggestions; welcome tour, More menu, Simple mode |
+| `js/stories.js`, `data/stories.json` | Bible stories: list, story pages, progress |
+| `js/audio.js` | Audio Bible player and voice selection |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |

@@ -7,7 +7,7 @@ test('audio Bible: deep male voice, follows along into the next book', async ({ 
   const first = await page.evaluate(() => window.__spoken[0]);
   expect(first.text).toMatch(/^Jude, chapter 1\./);
   expect(first.voice).toContain('Guy');
-  expect(first.pitch).toBeLessThan(1);
+  expect(first.pitch).toBe(1); // natural pitch by default (lowered pitch sounds robotic)
   await expect(page).toHaveURL(/#\/read\/revelation\/1/, { timeout: 20_000 });
   await page.locator('[data-p="stop"]').click();
   await expect(page.locator('#player')).toBeHidden();

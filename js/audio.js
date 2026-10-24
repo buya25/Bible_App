@@ -10,6 +10,8 @@ const FEMALE = /\b(female|woman|samantha|karen|moira|tessa|zira|susan|aria|jenny
 // Novelty and robotic voices on macOS/iOS that should never be picked automatically.
 const NOVELTY = /\b(bad news|bells|boing|bubbles|cellos|whisper|zarvox|trinoids|organ|superstar|jester|wobble|albert|bahh|hysterical|junior|ralph|kathy|princess|fred|good news|deranged|pipe)\b/i;
 const NATURAL = /natural|neural|online|premium|enhanced|siri|wavenet|studio/i;
+// Old-style synthetic voices that sound robotic (eSpeak, legacy Windows desktop voices).
+const ROBOTIC = /espeak|\bdesktop\b|^microsoft (david|mark|zira|hazel|george|susan|james|catherine)\b(?!.*(online|natural))/i;
 const DEEP = /\b(guy|davis|andrew|christopher|arthur|daniel|aaron|roger|brian|eric|ryan|thomas)\b/i;
 
 /** Higher is better: English, male, natural-sounding voices first. */
@@ -20,10 +22,15 @@ export function scoreVoice({ name = '', lang = '' }) {
   if (NOVELTY.test(name)) return score - 200;
   if (MALE.test(name)) score += 40;
   if (FEMALE.test(name)) score -= 50;
-  if (NATURAL.test(name)) score += 20;
+  // Sound quality matters most: a natural-sounding voice is far easier to listen to than a robotic one.
+  if (NATURAL.test(name)) score += 45;
+  if (ROBOTIC.test(name)) score -= 60;
   if (DEEP.test(name)) score += 10;
   return score;
 }
+
+/** Voices whose names mark them as high quality (neural, enhanced, premium…). */
+export const isHighQuality = (voice) => Boolean(voice) && NATURAL.test(voice.name) && !ROBOTIC.test(voice.name);
 
 export const isLikelyMale = (voice) => scoreVoice(voice) >= 70 || (MALE.test(voice.name) && !FEMALE.test(voice.name));
 
@@ -53,14 +60,15 @@ export function pickVoice(settings, list = voices()) {
 }
 
 /** Voice styles: pitch and speed adjustments applied to whichever voice is used. */
+// Pitch is left (almost) untouched: lowering it on device voices makes them sound robotic.
 export const VOICE_STYLES = [
-  ['deep', 'Deep & calm', { pitch: 0.8, rate: 0.9 }],
-  ['narrator', 'British narrator', { pitch: 0.85, rate: 0.85 }],
   ['natural', 'Natural', { pitch: 1, rate: 1 }],
+  ['calm', 'Calm & slower', { pitch: 0.97, rate: 0.88 }],
+  ['narrator', 'British narrator', { pitch: 1, rate: 0.9 }],
 ];
 
 export function voiceTuning(settings) {
-  const style = VOICE_STYLES.find(([id]) => id === (settings.voiceStyle || 'deep')) || VOICE_STYLES[0];
+  const style = VOICE_STYLES.find(([id]) => id === (settings.voiceStyle || 'natural')) || VOICE_STYLES[0];
   return { pitch: style[2].pitch, rate: Math.max(0.5, Math.round((settings.speechRate || 1) * style[2].rate * 100) / 100) };
 }
 
@@ -114,9 +122,12 @@ function speak(text, onEnd) {
   synth.speak(u);
 }
 
+const pastEnd = ({ chapter, verse, until }) => until && (chapter > until.chapter || (chapter === until.chapter && verse > until.verse));
+
 function speakCurrent() {
   if (state.status !== 'playing') return;
-  const bible = deps.getBible();
+  if (pastEnd(state)) return stop(); // a story or passage with a set end has finished
+  const bible = state.bible || deps.getBible();
   const verses = bible.books[state.book][state.chapter - 1];
   if (state.verse > verses.length) return chapterFinished();
   const text = verses[state.verse - 1];
@@ -136,7 +147,7 @@ function speakCurrent() {
 
 function chapterFinished() {
   const settings = deps.store.get().settings;
-  if (state.sleep === 'chapter' || settings.audioContinue === false) return stop();
+  if (state.until || state.sleep === 'chapter' || settings.audioContinue === false) return stop();
   const next = adjacent(state.book, state.chapter, 1);
   if (!next) return stop();
   state.book = next.book;
@@ -158,11 +169,15 @@ function adjacent(book, chapter, dir) {
   return { book, chapter };
 }
 
-/** Start reading at a chapter and verse. */
-export function play(book, chapter, verse = 1) {
+/**
+ * Start reading at a chapter and verse.
+ * options.until = { chapter, verse } stops at the end of a passage (e.g. a story);
+ * options.bible reads from a specific translation; options.title names it in the player.
+ */
+export function play(book, chapter, verse = 1, { until = null, bible = null, title = null } = {}) {
   if (!supported()) return false;
   synth.cancel();
-  Object.assign(state, { status: 'playing', book, chapter, verse, announce: verse === 1 });
+  Object.assign(state, { status: 'playing', book, chapter, verse, announce: verse === 1 && !title, until, bible, title });
   startAmbient();
   speakCurrent();
   return true;
@@ -205,7 +220,7 @@ export function skipChapter(dir) {
 }
 
 export function skipVerse(dir) {
-  const count = deps.getBible().books[state.book][state.chapter - 1].length;
+  const count = (state.bible || deps.getBible()).books[state.book][state.chapter - 1].length;
   const verse = Math.min(Math.max(1, state.verse + dir), count);
   utterance = null;
   synth.cancel();
@@ -258,7 +273,7 @@ function updateMediaSession() {
     ms.playbackState = state.status === 'playing' ? 'playing' : state.status === 'paused' ? 'paused' : 'none';
     if (state.status === 'stopped') return;
     ms.metadata = new MediaMetadata({
-      title: `${BOOKS[state.book].name} ${state.chapter}`,
+      title: state.title || `${BOOKS[state.book].name} ${state.chapter}`,
       artist: `Audio Bible · ${deps.getAbbr()}`,
       album: 'Bible',
       artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }],

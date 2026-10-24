@@ -3,7 +3,7 @@
 const KEY = 'bible-app:v1';
 
 export const DEFAULTS = {
-  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry', parallel: '', reminder: false, reminderTime: '07:00', mode: 'full', voiceURI: '', voiceStyle: 'deep', ambient: 'off', audioContinue: true },
+  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry', parallel: '', reminder: false, reminderTime: '07:00', mode: 'full', voiceURI: '', voiceStyle: 'natural', ambient: 'off', audioContinue: true, storyTranslation: 'bsb', storyVerseNumbers: false },
   highlights: {}, // verseKey -> color name
   bookmarks: {}, // verseKey -> timestamp
   notes: {}, // verseKey -> { text, updated }
@@ -18,6 +18,7 @@ export const DEFAULTS = {
   dismissed: {}, // suggestion -> ISO date dismissed ('install', 'backup')
   visitDays: 0, // distinct days the app was opened
   lastVisit: null,
+  storiesRead: {}, // story id -> timestamp
 };
 
 let state = load();

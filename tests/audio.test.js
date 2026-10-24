@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scoreVoice, rankVoices, pickVoice, voiceTuning, isLikelyMale } from '../js/audio.js';
+import { scoreVoice, rankVoices, pickVoice, voiceTuning, isLikelyMale, isHighQuality } from '../js/audio.js';
 
 const v = (name, lang = 'en-US', voiceURI = name) => ({ name, lang, voiceURI });
 const deviceVoices = [
@@ -28,17 +28,25 @@ test('a chosen voice wins; otherwise the best-ranked voice is used', () => {
   assert.equal(pickVoice({}, []), null);
 });
 
-test('"Deep & calm" lowers pitch and slows slightly', () => {
-  assert.deepEqual(voiceTuning({ voiceStyle: 'deep', speechRate: 1 }), { pitch: 0.8, rate: 0.9 });
-  assert.deepEqual(voiceTuning({ voiceStyle: 'natural', speechRate: 1.2 }), { pitch: 1, rate: 1.2 });
+test('voice styles keep the pitch natural and only slow the pace', () => {
+  assert.deepEqual(voiceTuning({ speechRate: 1 }), { pitch: 1, rate: 1 }); // default: natural
+  assert.deepEqual(voiceTuning({ voiceStyle: 'calm', speechRate: 1 }), { pitch: 0.97, rate: 0.88 });
+  assert.deepEqual(voiceTuning({ voiceStyle: 'deep', speechRate: 1.2 }), { pitch: 1, rate: 1.2 }); // old setting falls back
   assert.equal(voiceTuning({ speechRate: 0.4 }).rate, 0.5);
+});
+
+test('robotic voices rank below natural ones', () => {
+  const ranked = rankVoices([v('Microsoft David Desktop - English (United States)'), v('eSpeak English'), v('Aaron (Enhanced)'), v('Google US English')]).map((x) => x.name);
+  assert.equal(ranked[0], 'Aaron (Enhanced)');
+  assert.ok(ranked.indexOf('Microsoft David Desktop - English (United States)') > ranked.indexOf('Google US English'));
+  assert.ok(isHighQuality(v('Aaron (Enhanced)')) && !isHighQuality(v('Microsoft David Desktop - English (United States)')));
 });
 
 test('"British narrator" prefers a British male voice and a slower, lower delivery', () => {
   const ranked = rankVoices(deviceVoices);
   assert.equal(pickVoice({ voiceURI: '', voiceStyle: 'narrator' }, ranked).lang, 'en-GB');
   assert.ok(isLikelyMale(pickVoice({ voiceURI: '', voiceStyle: 'narrator' }, ranked)));
-  assert.deepEqual(voiceTuning({ voiceStyle: 'narrator', speechRate: 1 }), { pitch: 0.85, rate: 0.85 });
+  assert.deepEqual(voiceTuning({ voiceStyle: 'narrator', speechRate: 1 }), { pitch: 1, rate: 0.9 });
   // An explicitly chosen voice still wins.
   assert.equal(pickVoice({ voiceURI: 'Samantha', voiceStyle: 'narrator' }, ranked).name, 'Samantha');
 });

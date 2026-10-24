@@ -13,6 +13,7 @@ import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
 import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount, installInfo } from './safety.js';
 import { openTour, openMoreSheet } from './onboarding.js';
 import * as audio from './audio.js';
+import { renderStoriesHome, renderStory, storyCardHtml } from './stories.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -80,13 +81,15 @@ function openSettings() {
             <option value="">Automatic: best male voice for the style${audio.pickVoice({ ...s, voiceURI: '' }) ? ` (${escapeHtml(audio.pickVoice({ ...s, voiceURI: '' }).name)})` : ''}</option>
             ${audio.voices().map((v) => `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === s.voiceURI ? 'selected' : ''}>${audio.isLikelyMale(v) ? '★ ' : ''}${escapeHtml(v.name)} (${escapeHtml(v.lang)})</option>`).join('')}
           </select>
-          <div class="segmented" style="margin:8px 0">${audio.VOICE_STYLES.map(([v, l]) => `<button data-set="voiceStyle" data-value="${v}" aria-pressed="${(s.voiceStyle || 'deep') === v}">${l}</button>`).join('')}</div>
+          <div class="segmented" style="margin:8px 0">${audio.VOICE_STYLES.map(([v, l]) => `<button data-set="voiceStyle" data-value="${v}" aria-pressed="${(s.voiceStyle || 'natural') === v}">${l}</button>`).join('')}</div>
           <label for="sr" class="small">Speed: ${s.speechRate}×</label><input id="sr" type="range" min="0.5" max="1.5" step="0.05" value="${s.speechRate}" data-range="speechRate">
           <span class="small muted">Background sound</span>
           <div class="segmented" style="margin:6px 0 8px">${audio.AMBIENT_OPTIONS.map(([v, l]) => `<button data-set="ambient" data-value="${v}" aria-pressed="${(s.ambient || 'off') === v}">${l}</button>`).join('')}</div>
           <div class="switch"><label for="ac">Continue to the next chapter</label><input id="ac" type="checkbox" data-check="audioContinue" ${s.audioContinue !== false ? 'checked' : ''}></div>
           <div class="row" style="margin-top:8px"><button class="btn btn-small" data-preview>▶ Preview voice</button></div>
-          <p class="muted small">Uses the voices on your device. ★ = male voice. For the most natural deep voices, try Microsoft Edge (“Andrew”, “Guy”, “Davis” Natural voices) or on iPhone download “Enhanced” voices in Settings → Accessibility → Spoken Content → Voices.</p>
+          <p class="muted small">★ = male voice. The app reads with the voices installed on your device, so how natural it sounds depends on them.</p>
+          ${audio.isHighQuality(audio.pickVoice(s)) ? '' : `<div class="note-box voice-tip"><strong>Sounds robotic?</strong> Your device only has basic voices. Install a better one (free):${voiceHelpHtml()}</div>`}
+          <details class="voice-help"><summary>How to get a more natural voice</summary>${voiceHelpHtml()}</details>
         </div>
         <div class="field switch"><label for="vn">Show verse numbers</label><input id="vn" type="checkbox" data-check="verseNumbers" ${s.verseNumbers ? 'checked' : ''}></div>
         <div class="field switch"><label for="pm">Paragraph layout (verses flow together)</label><input id="pm" type="checkbox" data-check="paragraphMode" ${s.paragraphMode ? 'checked' : ''}></div>
@@ -245,6 +248,16 @@ store.subscribe((st) => {
   }
 });
 
+/** How to install a high-quality voice on this kind of device. */
+function voiceHelpHtml() {
+  const ua = navigator.userAgent;
+  const { ios } = installInfo();
+  if (ios) return '<ol class="install-steps"><li>Open the iPhone <strong>Settings</strong> app → <strong>Accessibility</strong> → <strong>Spoken Content</strong> → <strong>Voices</strong> → <strong>English</strong>.</li><li>Pick a voice marked <strong>Enhanced</strong> or <strong>Premium</strong> (for example <strong>Aaron</strong>, <strong>Evan</strong>, <strong>Nathan</strong> or <strong>Daniel (UK)</strong>) and download it.</li><li>Close and reopen this app, then choose that voice above.</li></ol>';
+  if (/Android/i.test(ua)) return '<ol class="install-steps"><li>Open phone <strong>Settings</strong> → search for <strong>Text-to-speech</strong>.</li><li>Set the engine to <strong>Speech Services by Google</strong>, tap ⚙ → <strong>Install voice data</strong> → <strong>English</strong>, and download a voice you like (several are male).</li><li>Reopen this app and choose the voice above.</li></ol>';
+  if (/Mac OS X/i.test(ua)) return '<ol class="install-steps"><li><strong>System Settings</strong> → <strong>Accessibility</strong> → <strong>Spoken Content</strong> → <strong>System voice</strong> → <strong>Manage Voices</strong>.</li><li>Download an English voice marked <strong>Premium</strong> or <strong>Enhanced</strong>.</li><li>Reload this page and choose it above. (Microsoft Edge also has excellent natural voices.)</li></ol>';
+  return '<ol class="install-steps"><li>Open this app in <strong>Microsoft Edge</strong>: it includes very natural voices such as <strong>Andrew</strong>, <strong>Guy</strong>, <strong>Brian</strong> and <strong>Ryan (UK)</strong>.</li><li>Choose one in the voice list above.</li></ol>';
+}
+
 /** Step-by-step install help for the current device. */
 function installHelpHtml() {
   const info = installInfo();
@@ -312,7 +325,7 @@ function router() {
     main.innerHTML = '<div class="loading">Loading the Bible…</div>';
     return;
   }
-  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), memorize: () => renderPractice(main, store), plans: renderPlans, library: () => renderLibrary(parts[0]) };
+  const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), stories: () => renderStoriesView(parts), memorize: () => renderPractice(main, store), plans: renderPlans, library: () => renderLibrary(parts[0]) };
   (views[view] || renderToday)();
 }
 
@@ -345,6 +358,16 @@ function renderStudy(parts, params) {
   return renderStudyHome(main, ['dictionary', 'people', 'topics', 'bible-dictionary', 'maps', 'timeline', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'home', params, { book: current.book }).catch(() => {
     main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
   });
+}
+
+/* ---------- Stories ---------- */
+
+function renderStoriesView(parts) {
+  const view = document.createElement('div'); // isolated, like Study pages (async rendering)
+  main.replaceChildren(view);
+  const failed = () => (view.innerHTML = '<div class="empty">Could not load the stories. Check your connection.</div>');
+  if (parts[0]) return renderStory(view, parts[0], { store, translations, loadTranslation, audio, toast }).catch(failed);
+  return renderStoriesHome(view, store).catch(failed);
 }
 
 /* ---------- Today ---------- */
@@ -384,6 +407,7 @@ function renderToday() {
       <div class="row"><strong style="font-size:18px">${formatReference(last.book, last.chapter)}</strong><span class="spacer"></span><a class="btn btn-primary" href="${readHref(last.book, last.chapter)}">Continue</a></div></section>`
       : `<section class="card"><div class="card-label">Start reading</div><p class="muted">New here? The Gospel of John is a wonderful place to begin.</p><div class="row"><a class="btn btn-primary" href="${readHref(42, 1)}">Read John 1</a><a class="btn" href="${readHref(0, 1)}">Genesis 1</a></div></section>`}
     <section class="card"><div class="card-label">Today's plan</div>${planHtml}</section>
+    <div id="story-card-slot" class="card-slot"></div>
     ${todayPersonalHtml(st)}
     <section class="card row stats">
       <div><div class="stat">${streak}</div><div class="muted small">day streak</div></div><span class="spacer"></span>
@@ -391,6 +415,12 @@ function renderToday() {
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
     </div>`;
+  storyCardHtml(store)
+    .then((html) => {
+      const slot = document.getElementById('story-card-slot');
+      if (slot) slot.outerHTML = html;
+    })
+    .catch(() => {});
   main.querySelector('[data-install]')?.addEventListener('click', async () => {
     if (await promptInstall()) toast('Installed! Open Bible from your home screen.');
     renderToday();
@@ -909,7 +939,7 @@ let lastHeard = null;
 audio.subscribe((p) => {
   renderPlayer(p);
   if (p.error) toast(p.error);
-  main.querySelectorAll('.verse.speaking').forEach((el) => el.classList.remove('speaking'));
+  main.querySelectorAll('.verse.speaking, .sv.speaking').forEach((el) => el.classList.remove('speaking'));
   const speakBtn = document.getElementById('speak-btn');
   const reading = route().view === 'read';
   const onPage = reading && p.book === current.book && p.chapter === current.chapter;
@@ -918,6 +948,10 @@ audio.subscribe((p) => {
   const following = reading && lastHeard && lastHeard.book === current.book && lastHeard.chapter === current.chapter;
   if (following && !onPage) {
     location.hash = readHref(p.book, p.chapter); // the reader was following along: turn the page (also into the next book)
+  } else if (route().view === 'stories' && p.status === 'playing') {
+    const el = main.querySelector(`.story-text [data-cv="${p.chapter}:${p.verse}"]`);
+    el?.classList.add('speaking');
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   } else if (onPage && p.status === 'playing') {
     const el = main.querySelector(`.verse[data-v="${p.verse}"]`);
     el?.classList.add('speaking');
@@ -930,7 +964,7 @@ const playerEl = document.getElementById('player');
 function renderPlayer(p) {
   playerEl.hidden = p.status === 'stopped';
   if (playerEl.hidden) return;
-  document.getElementById('player-ref').textContent = `${BOOKS[p.book].name} ${p.chapter}:${p.verse}`;
+  document.getElementById('player-ref').textContent = p.title ? `${p.title} · ${p.chapter}:${p.verse}` : `${BOOKS[p.book].name} ${p.chapter}:${p.verse}`;
   const sleep = p.sleep === 'chapter' ? 'Stops at end of chapter' : p.sleepEnds ? `Sleep in ${Math.max(1, Math.round((p.sleepEnds - Date.now()) / 60000))} min` : `${translation().abbr} · ${audio.pickVoice(store.get().settings)?.name?.replace(/^Microsoft |\s*\(.*\)$/g, '') || 'device voice'}`;
   document.getElementById('player-sub').textContent = sleep;
   playerEl.querySelector('[data-p="toggle"]').innerHTML = p.status === 'playing' ? ICONS.pause : ICONS.play;
