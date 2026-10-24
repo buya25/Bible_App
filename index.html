@@ -8,7 +8,12 @@
   <meta name="theme-color" content="#6b4f2a">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Bible">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -45,6 +50,15 @@
       <button data-action="more" aria-haspopup="dialog">More…</button>
       <button data-action="clear" aria-label="Clear selection">Done</button>
     </div>
+  </div>
+
+  <div class="player" id="player" hidden role="region" aria-label="Audio Bible">
+    <button class="player-info" data-p="open" aria-label="Go to the verse being read"><strong id="player-ref"></strong><span id="player-sub"></span></button>
+    <button class="icon-btn" data-p="back" aria-label="Previous verse"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18l-6-6 6-6M19 18l-6-6 6-6"/></svg></button>
+    <button class="icon-btn player-main" data-p="toggle" aria-label="Pause"></button>
+    <button class="icon-btn" data-p="fwd" aria-label="Next verse"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 18l6-6-6-6M5 18l6-6-6-6"/></svg></button>
+    <button class="icon-btn" data-p="sleep" aria-label="Sleep timer" title="Sleep timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
+    <button class="icon-btn" data-p="stop" aria-label="Stop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
 
   <nav class="tabbar" aria-label="Main">

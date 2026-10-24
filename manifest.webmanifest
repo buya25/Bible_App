@@ -1,13 +1,19 @@
 {
+  "id": "./",
   "name": "Bible",
   "short_name": "Bible",
-  "description": "Read, search, highlight and study the Bible — works offline.",
+  "description": "Read, listen to, search and study the Bible — works offline.",
   "start_url": "./#/today",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#fbf8f3",
   "theme_color": "#6b4f2a",
+  "categories": ["books", "education", "lifestyle"],
   "icons": [
-    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

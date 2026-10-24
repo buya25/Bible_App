@@ -10,8 +10,9 @@ import { newItem, memoryKey, renderMemoryList, renderPractice, dueItems } from '
 import { openPrayerDialog, renderPrayers } from './prayers.js';
 import { openImageDialog } from './verse-image.js';
 import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
-import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount } from './safety.js';
+import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount, installInfo } from './safety.js';
 import { openTour, openMoreSheet } from './onboarding.js';
+import * as audio from './audio.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -24,7 +25,6 @@ const actionBar = document.getElementById('action-bar');
 let bible = null;
 let selection = new Set(); // selected verse numbers in the current chapter
 let current = { book: 42, chapter: 1 };
-let speaking = null; // { verse } while read-aloud is active
 let translations = []; // [{ id, abbr, name, year, description }]
 let variantMap = new Map(); // verseKey -> manuscript-difference summary
 
@@ -39,6 +39,7 @@ const ICONS = {
   next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>',
   stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
   down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
 };
 
@@ -73,10 +74,26 @@ function openSettings() {
         <div class="field"><span class="label">Font</span>${seg('font', [['serif', 'Serif'], ['sans', 'Sans']])}</div>
         <div class="field"><label for="fs">Text size: ${s.fontSize}px</label><input id="fs" type="range" min="14" max="32" step="1" value="${s.fontSize}" data-range="fontSize"></div>
         <div class="field"><label for="lh">Line spacing: ${s.lineHeight}</label><input id="lh" type="range" min="1.3" max="2.2" step="0.1" value="${s.lineHeight}" data-range="lineHeight"></div>
-        <div class="field"><label for="sr">Read-aloud speed: ${s.speechRate}×</label><input id="sr" type="range" min="0.5" max="2" step="0.1" value="${s.speechRate}" data-range="speechRate"></div>
+        <div class="field audio-settings"><span class="label">Audio Bible</span>
+          <label for="voice" class="small muted" style="font-weight:400">Voice</label>
+          <select id="voice" class="picker-filter" data-select="voiceURI">
+            <option value="">Automatic: best male voice for the style${audio.pickVoice({ ...s, voiceURI: '' }) ? ` (${escapeHtml(audio.pickVoice({ ...s, voiceURI: '' }).name)})` : ''}</option>
+            ${audio.voices().map((v) => `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === s.voiceURI ? 'selected' : ''}>${audio.isLikelyMale(v) ? '★ ' : ''}${escapeHtml(v.name)} (${escapeHtml(v.lang)})</option>`).join('')}
+          </select>
+          <div class="segmented" style="margin:8px 0">${audio.VOICE_STYLES.map(([v, l]) => `<button data-set="voiceStyle" data-value="${v}" aria-pressed="${(s.voiceStyle || 'deep') === v}">${l}</button>`).join('')}</div>
+          <label for="sr" class="small">Speed: ${s.speechRate}×</label><input id="sr" type="range" min="0.5" max="1.5" step="0.05" value="${s.speechRate}" data-range="speechRate">
+          <span class="small muted">Background sound</span>
+          <div class="segmented" style="margin:6px 0 8px">${audio.AMBIENT_OPTIONS.map(([v, l]) => `<button data-set="ambient" data-value="${v}" aria-pressed="${(s.ambient || 'off') === v}">${l}</button>`).join('')}</div>
+          <div class="switch"><label for="ac">Continue to the next chapter</label><input id="ac" type="checkbox" data-check="audioContinue" ${s.audioContinue !== false ? 'checked' : ''}></div>
+          <div class="row" style="margin-top:8px"><button class="btn btn-small" data-preview>▶ Preview voice</button></div>
+          <p class="muted small">Uses the voices on your device. ★ = male voice. For the most natural deep voices, try Microsoft Edge (“Andrew”, “Guy”, “Davis” Natural voices) or on iPhone download “Enhanced” voices in Settings → Accessibility → Spoken Content → Voices.</p>
+        </div>
         <div class="field switch"><label for="vn">Show verse numbers</label><input id="vn" type="checkbox" data-check="verseNumbers" ${s.verseNumbers ? 'checked' : ''}></div>
         <div class="field switch"><label for="pm">Paragraph layout (verses flow together)</label><input id="pm" type="checkbox" data-check="paragraphMode" ${s.paragraphMode ? 'checked' : ''}></div>
         <div class="field switch"><label for="xr">Show related verses under each verse</label><input id="xr" type="checkbox" data-check="crossRefs" ${s.crossRefs ? 'checked' : ''}></div>
+        <div class="field"><span class="label">Install the app</span>
+          <div id="install-help" class="small"></div>
+        </div>
         <div class="field"><span class="label">Daily reminder</span>
           <div class="switch"><label for="rm">Remind me to read each day at</label><input id="rm" type="checkbox" data-reminder ${s.reminder ? 'checked' : ''}></div>
           <div class="row" style="margin-top:8px"><input type="time" class="picker-filter" style="width:auto;margin:0" value="${s.reminderTime}" data-time aria-label="Reminder time"><button class="btn btn-small" data-ics>Add to calendar</button></div>
@@ -95,6 +112,8 @@ function openSettings() {
       </div>`;
   };
   render();
+  const installHelp = document.getElementById('install-help');
+  if (installHelp) installHelp.innerHTML = installHelpHtml();
   storageStatusText().then((text) => {
     const el = document.getElementById('storage-status');
     if (el) el.textContent = text;
@@ -107,10 +126,14 @@ function openSettings() {
       applySettings();
       render();
       if (t.dataset.set === 'mode') router();
+      if (t.dataset.set === 'ambient') audio.refreshAmbient();
+      if (t.dataset.set === 'voiceStyle') audio.preview(store.get().settings);
     }
     if (t?.hasAttribute('data-export')) exportBackup();
     if (t?.hasAttribute('data-download')) downloadEverything(t);
     if (t?.hasAttribute('data-ics')) downloadIcs(store.get().settings.reminderTime);
+    if (t?.hasAttribute('data-preview')) audio.preview(store.get().settings);
+    if (t?.hasAttribute('data-install')) promptInstall().then((ok) => ok && toast('Installed! Open Bible from your home screen.'));
     if (t?.hasAttribute('data-tour')) {
       dialog.close();
       return showTour();
@@ -119,6 +142,10 @@ function openSettings() {
   };
   dialog.oninput = (e) => {
     if (e.target.dataset.select === 'translation') return switchTranslation(e.target.value);
+    if (e.target.dataset.select === 'voiceURI') {
+      store.update((st) => (st.settings.voiceURI = e.target.value));
+      return audio.preview(store.get().settings, 'In the beginning was the Word, and the Word was with God.');
+    }
     if (e.target.hasAttribute('data-time')) return store.update((st) => (st.settings.reminderTime = e.target.value || '07:00'));
     if (e.target.hasAttribute('data-reminder')) {
       if (!e.target.checked) return store.update((st) => (st.settings.reminder = false));
@@ -218,6 +245,24 @@ store.subscribe((st) => {
   }
 });
 
+/** Step-by-step install help for the current device. */
+function installHelpHtml() {
+  const info = installInfo();
+  const ua = navigator.userAgent;
+  if (info.standalone) return '<p class="muted">✓ The app is installed. You are using it from your home screen.</p>';
+  if (/FBAN|FBAV|Instagram|WhatsApp|Line\/|GSA\/|Snapchat|Twitter|TikTok/i.test(ua) || (/wv\)/.test(ua) && /Android/.test(ua))) {
+    return '<p>This page is open inside another app (like WhatsApp or Facebook), which cannot install it. Tap <strong>⋮</strong> or <strong>Share</strong> and choose <strong>Open in browser</strong> (Chrome or Safari), then install from there.</p>';
+  }
+  if (info.ios) {
+    return `<ol class="install-steps"><li>Open this page in <strong>Safari</strong> (on iPhone, other browsers may not offer it).</li><li>Tap <strong>Share</strong> <span aria-hidden="true">⎙</span> at the bottom of the screen.</li><li>Scroll down and tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li></ol>`;
+  }
+  if (info.canPrompt) return '<p>Install Bible to open it like an app and read offline.</p><button class="btn btn-small btn-primary" data-install>Install app</button>';
+  if (/Android/i.test(ua)) {
+    return '<ol class="install-steps"><li>Open this page in <strong>Chrome</strong>.</li><li>Tap the <strong>⋮</strong> menu (top right).</li><li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li></ol><p class="muted">If you only just opened the site, wait a few seconds and try again.</p>';
+  }
+  return '<p>In Chrome or Edge, click the <strong>install icon</strong> in the address bar (a screen with a down arrow), or open the browser menu and choose <strong>Install Bible</strong>. Firefox on desktop does not support installing.</p>';
+}
+
 function showTour() {
   openTour(dialog, {
     mode: store.get().settings.mode,
@@ -259,7 +304,6 @@ function setActiveTab(view) {
 }
 
 function router() {
-  stopSpeaking();
   clearSelection();
   wordContext.lookup = null;
   const { view, parts, params } = route();
@@ -462,7 +506,7 @@ function renderReader() {
       <button class="chapter-title-btn" id="picker-btn" aria-haspopup="dialog"><span>${formatReference(book, chapter)}</span> ${ICONS.down}</button>
       <button class="btn btn-small reader-tool" id="translation-btn" aria-label="Translation: ${translation().name}${parallel ? ` with ${parallelAbbr}` : ''}" title="Change translation">${abbr}${parallel ? `<span class="tool-sub"> | ${parallelAbbr}</span>` : ''}</button>
       <button class="btn btn-small reader-tool" id="original-btn" data-advanced aria-pressed="${original}" title="Show the original ${book < 39 ? 'Hebrew' : 'Greek'} word by word">${book < 39 ? 'עב' : 'Ελ'}<span class="tool-label"> Original</span></button>
-      <button class="icon-btn" id="speak-btn" aria-label="Read aloud" title="Read aloud">${speaking ? ICONS.stop : ICONS.play}</button>
+      <button class="icon-btn" id="speak-btn" aria-label="Listen to this chapter" title="Listen">${(() => { const p = audio.playerState(); return p.status === 'playing' && p.book === book && p.chapter === chapter ? ICONS.pause : ICONS.play; })()}</button>
       <a class="icon-btn" ${next ? `href="${readHref(next.book, next.chapter)}"` : 'aria-disabled="true"'} aria-label="Next chapter">${ICONS.next}</a>
     </div>
     <article class="passage${st.settings.paragraphMode && !original && !parallel ? ' paragraphs' : ''}${original ? ' original-mode' : ''}${parallel ? ' parallel-mode' : ''}" lang="en">
@@ -849,48 +893,78 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ---------- Read aloud ---------- */
+/* ---------- Audio Bible ---------- */
 
 function toggleSpeaking() {
-  if (speaking) return stopSpeaking();
-  if (!('speechSynthesis' in window)) return toast('Read aloud is not supported in this browser');
-  speaking = { verse: selection.size ? Math.min(...selection) : 1 };
+  if (!audio.supported()) return toast('Listening is not supported in this browser');
+  const p = audio.playerState();
+  if (p.status !== 'stopped' && p.book === current.book && p.chapter === current.chapter) return audio.toggle();
+  const from = selection.size ? Math.min(...selection) : 1;
   clearSelection();
-  speakVerse();
-  document.getElementById('speak-btn').innerHTML = ICONS.stop;
+  audio.play(current.book, current.chapter, from);
 }
 
-function speakVerse() {
-  if (!speaking) return;
-  const verses = bible.books[current.book][current.chapter - 1];
+// Follow the reading: highlight the verse being read, and turn the page when the audio moves on.
+let lastHeard = null;
+audio.subscribe((p) => {
+  renderPlayer(p);
+  if (p.error) toast(p.error);
   main.querySelectorAll('.verse.speaking').forEach((el) => el.classList.remove('speaking'));
-  if (speaking.verse > verses.length) return stopSpeaking();
-  const el = main.querySelector(`.verse[data-v="${speaking.verse}"]`);
-  el?.classList.add('speaking');
-  el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  if (!verses[speaking.verse - 1]) {
-    speaking.verse++;
-    return speakVerse();
+  const speakBtn = document.getElementById('speak-btn');
+  const reading = route().view === 'read';
+  const onPage = reading && p.book === current.book && p.chapter === current.chapter;
+  if (speakBtn) speakBtn.innerHTML = p.status === 'playing' && onPage ? ICONS.pause : ICONS.play;
+  if (p.status === 'stopped') return (lastHeard = null);
+  const following = reading && lastHeard && lastHeard.book === current.book && lastHeard.chapter === current.chapter;
+  if (following && !onPage) {
+    location.hash = readHref(p.book, p.chapter); // the reader was following along: turn the page (also into the next book)
+  } else if (onPage && p.status === 'playing') {
+    const el = main.querySelector(`.verse[data-v="${p.verse}"]`);
+    el?.classList.add('speaking');
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
-  const u = new SpeechSynthesisUtterance(verses[speaking.verse - 1]);
-  u.rate = store.get().settings.speechRate;
-  u.lang = 'en-US';
-  u.onend = () => {
-    if (!speaking) return;
-    speaking.verse++;
-    speakVerse();
-  };
-  speechSynthesis.speak(u);
-}
+  lastHeard = { book: p.book, chapter: p.chapter };
+});
 
-function stopSpeaking() {
-  if (!speaking) return;
-  speaking = null;
-  speechSynthesis.cancel();
-  main.querySelectorAll('.verse.speaking').forEach((el) => el.classList.remove('speaking'));
-  const btn = document.getElementById('speak-btn');
-  if (btn) btn.innerHTML = ICONS.play;
+const playerEl = document.getElementById('player');
+function renderPlayer(p) {
+  playerEl.hidden = p.status === 'stopped';
+  if (playerEl.hidden) return;
+  document.getElementById('player-ref').textContent = `${BOOKS[p.book].name} ${p.chapter}:${p.verse}`;
+  const sleep = p.sleep === 'chapter' ? 'Stops at end of chapter' : p.sleepEnds ? `Sleep in ${Math.max(1, Math.round((p.sleepEnds - Date.now()) / 60000))} min` : `${translation().abbr} · ${audio.pickVoice(store.get().settings)?.name?.replace(/^Microsoft |\s*\(.*\)$/g, '') || 'device voice'}`;
+  document.getElementById('player-sub').textContent = sleep;
+  playerEl.querySelector('[data-p="toggle"]').innerHTML = p.status === 'playing' ? ICONS.pause : ICONS.play;
+  playerEl.querySelector('[data-p="toggle"]').setAttribute('aria-label', p.status === 'playing' ? 'Pause' : 'Play');
+  playerEl.querySelector('[data-p="sleep"]').classList.toggle('on', Boolean(p.sleep));
 }
+setInterval(() => audio.playerState().sleepEnds && renderPlayer(audio.playerState()), 30000);
+playerEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-p]');
+  if (!b) return;
+  const p = audio.playerState();
+  switch (b.dataset.p) {
+    case 'toggle':
+      audio.toggle();
+      break;
+    case 'back':
+      audio.skipVerse(-1);
+      break;
+    case 'fwd':
+      audio.skipVerse(1);
+      break;
+    case 'open':
+      location.hash = readHref(p.book, p.chapter, p.verse);
+      break;
+    case 'sleep': {
+      const v = audio.cycleSleep();
+      toast(v === 'chapter' ? 'Will stop at the end of this chapter' : v ? `Sleep timer: ${v} minutes` : 'Sleep timer off');
+      break;
+    }
+    case 'stop':
+      audio.stop();
+      break;
+  }
+});
 
 /* ---------- Search ---------- */
 
@@ -1094,6 +1168,7 @@ Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
     translations = list;
     variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
     bible = await loadTranslation(translation().id).catch(() => loadTranslation('kjv'));
+    audio.initAudio({ store, getBible: () => bible, getAbbr: () => translation().abbr });
     router();
     recordVisit(store);
     if (!store.get().onboarded) showTour();

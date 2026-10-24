@@ -17,12 +17,12 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Timeline:** 250 events and 95 reigns, judges, prophets and periods, grouped into eras from Creation to the early church. It can be filtered to kings, judges or prophets, and explains how the dates were worked out.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
+- **Audio Bible:** tap ▶ in the reader to listen. It uses the device's voices, picking a deep male voice automatically, with styles **Deep & calm**, **British narrator** and **Natural**. Reading continues from chapter to chapter and highlights each verse. A mini player stays available while you browse, with a sleep timer, lock-screen controls where supported, and an optional soft background (pad or gentle rain, generated without audio files).
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
 - **Highlights:** five colours, applied to one verse or several at once.
 - **Notes and bookmarks:** attach your own reflections to any verse.
 - **Copy and share:** passages are copied or shared with their reference, e.g. "John 3:16-17 (KJV)".
 - **Search:** find words or `"exact phrases"`, limit the search to the Old Testament, New Testament or one book, or type a reference like `Rom 8:28` to jump straight there.
-- **Read aloud:** text-to-speech highlights each verse as it is read, with adjustable speed.
 - **Reading plans:** whole Bible in a year, New Testament in 90 days, Gospels in 30 days, Psalms & Proverbs, Old Testament in a year. Daily readings are balanced by verse count.
 - **Today screen:** verse of the day, continue where you left off, today's plan reading and your reading streak.
 - **Memory verses:** select verses and tap **Memorize**. Spaced repetition brings each verse back after 1, 2, 4, 7, 14, 30, 60 and then 120 days. Practice by recalling, with first-letter hints, or by typing the verse, which is checked word by word.
@@ -59,8 +59,11 @@ Any other static host works too (Netlify, Cloudflare Pages): upload `index.html`
 ## Tests
 
 ```sh
-npm test             # node --test, no dependencies
+npm test             # unit and data tests (node --test, no dependencies)
+npm run test:e2e     # browser tests: Chrome, Safari/WebKit, iPhone 13 and Pixel 7 emulation
 ```
+
+Before running the browser tests for the first time, install the browsers with `npx playwright install chromium webkit`. GitHub Actions runs both suites on every push.
 
 The tests cover reference parsing, search, reading-plan schedules, streaks, grammar-code decoding, dictionary lookup and search, and the integrity of the data: 66 books, 31,102 verses, every translation aligned to the same verse structure, and original-language words for every verse.
 

@@ -78,8 +78,8 @@ export async function checkReminder(store, { title, body }) {
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
       const reg = await navigator.serviceWorker?.ready;
-      if (reg) await reg.showNotification(title, { body, icon: 'icons/icon.svg', tag: 'daily-reminder' });
-      else new Notification(title, { body, icon: 'icons/icon.svg' });
+      if (reg) await reg.showNotification(title, { body, icon: 'icons/icon-192.png', tag: 'daily-reminder' });
+      else new Notification(title, { body, icon: 'icons/icon-192.png' });
       return;
     } catch {
       // fall back to a toast

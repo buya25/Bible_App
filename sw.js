@@ -1,5 +1,5 @@
 // Offline support: cache the app shell and Bible text, serve cache-first, refresh in the background.
-const CACHE = 'bible-app-v9';
+const CACHE = 'bible-app-v10';
 const ASSETS = [
   './',
   'index.html',
@@ -25,6 +25,10 @@ const ASSETS = [
   'js/reminders.js',
   'js/safety.js',
   'js/onboarding.js',
+  'js/audio.js',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/apple-touch-icon.png',
   'vendor/leaflet/leaflet.js',
   'vendor/leaflet/leaflet.css',
   'data/translations/index.json',
@@ -66,7 +70,7 @@ self.addEventListener('periodicsync', (event) => {
   event.waitUntil(
     self.registration.showNotification('Time for your Bible reading', {
       body: 'Open today’s verse and reading plan.',
-      icon: 'icons/icon.svg',
+      icon: 'icons/icon-192.png',
       tag: 'daily-reminder',
     }),
   );
