@@ -7,6 +7,7 @@ import { escapeHtml, readHref } from './util.js';
 import { renderNamesHome, namesForStrong, nameHref, typeLabel } from './names.js';
 import { loadCrossRefs, crossRefListHtml, bindMoreButtons } from './crossrefs.js';
 import { renderCommentaryPanel } from './commentary.js';
+import { renderTopicsHome, renderDictionaryHome } from './topics.js';
 
 const STATUS = {
   1: { cls: 'w-other', label: 'Found in other ancient sources (e.g. Septuagint or Dead Sea Scrolls), not in the standard Hebrew text' },
@@ -235,7 +236,7 @@ export async function renderVersePage(main, book, chapter, verseSpec, currentId,
 
 export async function renderStudyHome(main, tab, params) {
   document.title = 'Study — Bible';
-  const tabs = [['dictionary', 'Dictionary'], ['people', 'People & places'], ['differences', 'Manuscript differences'], ['about', 'About the texts']];
+  const tabs = [['dictionary', 'Hebrew & Greek'], ['people', 'People & places'], ['topics', 'Topics'], ['bible-dictionary', 'Bible dictionary'], ['differences', 'Manuscripts'], ['about', 'About']];
   main.innerHTML = `
     <h1>Study</h1>
     <div class="tabs" role="tablist">${tabs.map(([id, label]) => `<a role="tab" class="tab-link" aria-selected="${id === tab}" href="#/study/${id}">${label}</a>`).join('')}</div>
@@ -243,6 +244,8 @@ export async function renderStudyHome(main, tab, params) {
   const panel = document.getElementById('study-panel');
   if (tab === 'about') panel.innerHTML = ABOUT_HTML;
   else if (tab === 'people') await renderNamesHome(panel, params);
+  else if (tab === 'topics') await renderTopicsHome(panel, params);
+  else if (tab === 'bible-dictionary') await renderDictionaryHome(panel, params);
   else if (tab === 'differences') await renderDifferences(panel, params);
   else await renderDictionary(panel, params);
 }
@@ -362,6 +365,7 @@ const ABOUT_HTML = `
   <div class="card prose small">
     <h2 style="margin-top:0">Sources</h2>
     <p>Hebrew and Greek texts, glosses, grammar, manuscript data, lexicons and the people & places dictionary come from <a href="https://github.com/STEPBible/STEPBible-Data" target="_blank" rel="noopener">STEPBible.org</a> (Tyndale House, Cambridge), licensed CC BY 4.0. They are reformatted for this app. English glosses are based on the Berean Study Bible. STEPBible adapted the people & places summaries from AI-generated text.</p>
+    <p>Topics come from Nave’s Topical Bible (1896) via <a href="https://github.com/BradyStephenson/bible-data" target="_blank" rel="noopener">BibleData</a> (CC BY 4.0). Bible dictionary articles are Easton’s (1897) and Smith’s (1863), via <a href="https://github.com/neuu-org/bible-dictionary-dataset" target="_blank" rel="noopener">NEUU</a> (CC BY 4.0). Commentaries are Matthew Henry and Jamieson, Fausset & Brown (public domain).</p>
     <p>Cross references come from <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY), ranked by reader votes.</p>
     <p>Map locations come from <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> via STEPBible. Many ancient sites are uncertain. Translations are in the public domain.</p>
   </div>`;

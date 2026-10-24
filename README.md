@@ -11,6 +11,8 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **People & places dictionary:** 3,129 people, 1,006 places and 102 other names (angels and other spiritual beings, months, festivals, titles). Each entry has a short summary, family links (parents, siblings, spouses, children), the name in Hebrew/Greek, a map link for places, and every verse where it appears. Search by any form of a name (Abram/Abraham, Saul/Paul), browse A–Z, or filter people, places and other. Names are also recognised in the Search tab, in verse studies, and when you tap a name in the original text.
 - **Cross references:** about 340,000 links between related verses, strongest first. Select verses and tap **Related**, or turn on **Settings → Show related verses under each verse** for study-Bible-style references in the reader. The verse of the day and verse study pages show them too.
 - **Commentaries:** Matthew Henry (1706–1721, devotional and practical) and Jamieson, Fausset & Brown (1871, concise verse-by-verse notes), both public domain. Select verses and tap **Commentary**, or see them on the verse study page. Bible references inside the notes are tappable.
+- **Topical index:** Nave's Topical Bible, with 5,319 subjects (faith, prayer, marriage, money…). Each is grouped by theme with its verses, which you can tap or read inline, and "See also" links between topics.
+- **Bible dictionary:** about 6,000 articles from Easton's (1897) and Smith's (1863) dictionaries on customs, objects, places, measures and ideas, linked to matching topics and people & places.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
@@ -62,6 +64,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/names.js` | People & places dictionary: search, browse and entry pages |
 | `js/crossrefs.js` | Cross references: lookup, labels, dialog and inline display |
 | `js/commentary.js` | Commentaries: loading (gzip), section lookup, dialog and panel |
+| `js/topics.js` | Topical index and Bible dictionary: search, browse and pages |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |
@@ -69,6 +72,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `data/names/` | People & places (one file per letter, plus a search index) |
 | `data/crossrefs/` | Related verses for every verse (one file per book) |
 | `data/commentary/` | Commentaries, one gzip-compressed file per book |
+| `data/topics/`, `data/dictionary/` | Nave's topics; Easton's and Smith's dictionary articles |
 | `data/variants.json` | Verses where manuscripts differ |
 | `tools/build_data.py` | Regenerates everything in `data/` from the open sources |
 | `sw.js`, `manifest.webmanifest` | Offline support and installability |
@@ -81,6 +85,8 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | BSB, YLT, ASV | [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases) | Public domain |
 | Cross references | [OpenBible.info](https://www.openbible.info/labs/cross-references/) via scrollmapper/bible_databases | [CC BY](https://creativecommons.org/licenses/by/4.0/) |
 | Matthew Henry, Jamieson-Fausset-Brown commentaries | [Free Use Bible API](https://bible.helloao.org) via [joathanmf/bibliaco-dados](https://github.com/joathanmf/bibliaco-dados) (checksums verified) | Public domain |
+| Nave's Topical Bible | [BradyStephenson/bible-data](https://github.com/BradyStephenson/bible-data) | CC BY 4.0 (text public domain) |
+| Easton's and Smith's Bible dictionaries | [neuu-org/bible-dictionary-dataset](https://github.com/neuu-org/bible-dictionary-dataset) | CC BY 4.0 (text public domain) |
 | WEB | [seven1m/open-bibles](https://github.com/seven1m/open-bibles) | Public domain |
 | Hebrew OT (TAHOT), Greek NT (TAGNT), lexicons (TBESH, TBESG), people & places (TIPNR) | [STEPBible.org](https://github.com/STEPBible/STEPBible-Data), Tyndale House, Cambridge | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 

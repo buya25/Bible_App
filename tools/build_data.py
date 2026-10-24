@@ -7,6 +7,9 @@ Usage: python3 tools/build_data.py <sources-dir>
   bible_databases/sources/extras/cross_references.txt   OpenBible.info cross references (CC BY), via scrollmapper
   commentaries/<id>.en.jsonl.gz                        github.com/joathanmf/bibliaco-dados release classicos-en-2026-10-19
                                                         (from bible.helloao.org; public domain)
+  bible-data/NavesTopicalDictionary.csv                 github.com/BradyStephenson/bible-data (CC BY 4.0)
+  bible-dictionary-dataset/data/01_parsed/*.json        github.com/neuu-org/bible-dictionary-dataset (CC BY 4.0;
+                                                        Easton 1897 + Smith 1863, public domain)
   thiagobodruk/en_kjv.json                              github.com/thiagobodruk/bible (keeps "LORD" small caps)
   bible_databases/formats/json/{BSB,YLT,ASV}.json       github.com/scrollmapper/bible_databases
   open-bibles/eng-web.usfx.xml                          github.com/seven1m/open-bibles
@@ -23,10 +26,15 @@ Outputs (all under data/):
   crossrefs/<book>.json    related verses for each verse, strongest first (OpenBible.info)
   commentary/<id>/<book>.json.gz  commentary sections per chapter, gzip-compressed (decompressed in the browser)
   commentary/index.json    available commentaries
+  topics/<letter>.json     Nave's Topical Bible, with verse references parsed
+  topics/index.json        topic search index
+  dictionary/<letter>.json Easton's and Smith's Bible dictionaries
+  dictionary/index.json    dictionary search index
 
 STEPBible data is reformatted (not reworded): fields are selected, HTML is reduced to
 <b>/<i>/<br> and verse links, and references are mapped to KJV versification.
 """
+import csv
 import glob
 import gzip
 import html
@@ -596,6 +604,116 @@ def build_commentaries(kjv):
     write_json('commentary/index.json', meta)
 
 
+# ---------------------------------------------------------------- topics (Nave's) & Bible dictionary
+
+NAVE_CODES = dict(OSIS_BOOK)  # Nave's uses 3-letter USFM-style codes
+NAVE_CODES.update({c: i for i, c in enumerate(USFX_CODES)})
+NAVE_CODES['1JHN'] = 61
+NAVE_REF = re.compile(r'\b(1JHN|[1-3]?[A-Z]{2,3}) (\d+):')
+
+
+def title_case(s):
+    small = {'of', 'and', 'the', 'in', 'to', 'a', 'an', 'for', 'on', 'by', 'with', 'at', 'from'}
+    words = s.lower().split()
+    return ' '.join(w if i and w in small else w[:1].upper() + w[1:] for i, w in enumerate(words))
+
+
+def parse_nave_refs(text, kjv):
+    """'EXO 23:4,5; PRO 19:11; 24:17,29' -> packed refs / [start, end] ranges (book and chapter carry over)."""
+    out, book, chapter = [], None, None
+    for seg in re.split(r';', text):
+        for m in re.finditer(r'(?:\b(1JHN|[1-3]?[A-Z]{2,3}) )?(\d+):([\d,\-–]+)|,\s*(\d+)(?:-(\d+))?', seg):
+            if m.group(3):
+                if m.group(1):
+                    book = NAVE_CODES.get(m.group(1))
+                chapter = int(m.group(2))
+                items = m.group(3)
+            elif chapter:
+                items = m.group(4) + (f'-{m.group(5)}' if m.group(5) else '')
+            else:
+                continue
+            if book is None or chapter > len(kjv[book]):
+                continue
+            count = len(kjv[book][chapter - 1])
+            for item in items.split(','):
+                a, _, b = item.replace('–', '-').partition('-')
+                if not a.isdigit() or not 1 <= int(a) <= count:
+                    continue
+                start = book * 1000000 + chapter * 1000 + int(a)
+                if b.isdigit() and int(a) < int(b) <= count:
+                    out.append([start, start - int(a) + int(b)])
+                else:
+                    out.append(start)
+    return out
+
+
+def build_topics(kjv):
+    rows = list(csv.DictReader(open(os.path.join(SRC, 'bible-data/NavesTopicalDictionary.csv'), encoding='utf-8-sig')))
+    subjects = {r['subject'].strip() for r in rows}
+    slug = lambda name: re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+    chunks = defaultdict(dict)
+    index = []
+    for r in rows:
+        name = r['subject'].strip()
+        lines = []
+        for raw in r['entry'].split('\n'):
+            if not raw.strip():
+                continue
+            depth = (len(raw) - len(raw.lstrip(' '))) // 5
+            text = raw.strip().lstrip('-').strip()
+            see = []
+            sm = re.match(r'^See (also )?(.+)$', text, re.I)
+            if sm:
+                for target in re.split(r';\s*', sm.group(2)):
+                    target = target.strip().rstrip('.')
+                    base = target if target in subjects else target.split(',')[0].strip()
+                    if base in subjects:
+                        see.append([title_case(target), slug(base)])
+                lines.append({'d': depth, 'see': see} if see else {'d': depth, 't': text})
+                continue
+            m = NAVE_REF.search(text)
+            label = (text[:m.start()] if m else text).strip().rstrip(',;:')
+            refs = parse_nave_refs(text[m.start():], kjv) if m else []
+            if re.fullmatch(r'[A-Z0-9 ,\'\-]+', label or 'x'):
+                label = title_case(label)
+            line = {'d': depth}
+            if label:
+                line['t'] = label
+            if refs:
+                line['r'] = refs
+            if label or refs:
+                lines.append(line)
+        key = slug(name)
+        count = sum(len(l.get('r', [])) for l in lines)
+        chunks[key[0] if key[:1].isalpha() else '_'][key] = {'n': title_case(name), 'l': lines}
+        index.append([key, title_case(name), count])
+    for letter, data in chunks.items():
+        write_json(f'topics/{letter}.json', data)
+    write_json('topics/index.json', sorted(index, key=lambda x: x[0]))
+    print(f'  topics: {len(index)} topics, {sum(x[2] for x in index)} verse references')
+
+
+def build_dictionary():
+    base = os.path.join(SRC, 'bible-dictionary-dataset/data/01_parsed')
+    chunks = defaultdict(dict)
+    index = []
+    for path in sorted(glob.glob(os.path.join(base, '[a-z].json'))):
+        with open(path, encoding='utf-8') as f:
+            data = json.load(f)
+        for key, e in data.items():
+            defs = [[d['source'], d['text'].strip()] for d in e.get('definitions', []) if d.get('text', '').strip()]
+            if not defs:
+                continue
+            slug = re.sub(r'[^a-z0-9]+', '-', e.get('slug', key).lower()).strip('-') or key
+            chunks[slug[0] if slug[:1].isalpha() else '_'][slug] = {'n': e['name'], 'd': defs}
+            first = re.split(r'(?<=[.;])\s', defs[0][1], maxsplit=1)[0][:140]
+            index.append([slug, e['name'], first])
+    for letter, data in chunks.items():
+        write_json(f'dictionary/{letter}.json', data)
+    write_json('dictionary/index.json', sorted(index, key=lambda x: x[1].lower()))
+    print(f'  bible dictionary: {len(index)} entries')
+
+
 if __name__ == '__main__':
     print('translations')
     kjv, meta = build_translations()
@@ -610,6 +728,9 @@ if __name__ == '__main__':
     build_crossrefs(kjv)
     print('commentaries')
     build_commentaries(kjv)
+    print('topics & dictionary')
+    build_topics(kjv)
+    build_dictionary()
     files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json*'), recursive=True)
                    if not p.endswith('manifest.json'))
     write_json('manifest.json', files)
