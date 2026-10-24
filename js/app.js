@@ -20,6 +20,10 @@ let speaking = null; // { verse } while read-aloud is active
 let translations = []; // [{ id, abbr, name, year, description }]
 let variantMap = new Map(); // verseKey -> manuscript-difference summary
 
+const parallelId = () => {
+  const id = store.get().settings.parallel;
+  return id && id !== translation().id && translations.some((t) => t.id === id) ? id : '';
+};
 const translation = () => translations.find((t) => t.id === store.get().settings.translation) || translations[0] || { id: 'kjv', abbr: 'KJV', name: 'King James Version' };
 const verseText = (book, chapter, verse) => bible.books[book][chapter - 1][verse - 1];
 const ICONS = {
@@ -130,6 +134,12 @@ function openTranslationPicker() {
     <div class="dialog-body">
       ${translations.map((t) => `<button class="translation-option${t.id === translation().id ? ' current' : ''}" data-translation="${t.id}">
         <strong>${t.abbr}</strong> · ${escapeHtml(t.name)} <span class="muted small">(${t.year})</span><br><span class="muted small">${escapeHtml(t.description)}</span></button>`).join('')}
+      <h3>Side by side</h3>
+      <p class="small muted">Show a second translation next to the one you are reading.</p>
+      <div class="segmented parallel-choice">
+        <button data-parallel="" aria-pressed="${!parallelId()}">Off</button>
+        ${translations.filter((t) => t.id !== translation().id).map((t) => `<button data-parallel="${t.id}" aria-pressed="${parallelId() === t.id}">${t.abbr}</button>`).join('')}
+      </div>
       <p class="small muted">Want to see how a verse was written? Turn on <strong>Original</strong> in the reader, or select a verse and tap <strong>Study</strong> to compare all translations.</p>
     </div>`;
   dialog.onclick = (e) => {
@@ -138,6 +148,11 @@ function openTranslationPicker() {
     if (t?.dataset.translation) {
       dialog.close();
       switchTranslation(t.dataset.translation);
+    }
+    if (t && t.dataset.parallel !== undefined) {
+      store.update((s) => (s.settings.parallel = t.dataset.parallel));
+      dialog.close();
+      if (route().view === 'read') renderReader();
     }
   };
   dialog.oninput = dialog.onchange = null;
@@ -338,20 +353,26 @@ function renderReader() {
     return `<span class="verse${selection.has(v) ? ' selected' : ''}" data-v="${v}" ${hl ? `data-hl="${hl}"` : ''} tabindex="0"><sup>${v}</sup>${body}${mark}${icons}</span>`;
   };
 
+  const parallel = original ? '' : parallelId();
+  const parallelAbbr = parallel && translations.find((t) => t.id === parallel).abbr;
   const body = original
     ? '<div class="loading">Loading the original text…</div>'
-    : verses.map((text, i) => verseHtml(text, i + 1)).join(' ');
+    : parallel
+      ? `<div class="pr-row pr-head"><div>${abbr}</div><div>${parallelAbbr}</div></div>${verses
+          .map((text, i) => `<div class="pr-row"><div class="pr-a">${verseHtml(text, i + 1)}</div><div class="pr-b" data-pv="${i + 1}" lang="en"></div></div>`)
+          .join('')}`
+      : verses.map((text, i) => verseHtml(text, i + 1)).join(' ');
 
   main.innerHTML = `
     <div class="reader-nav">
       <a class="icon-btn" ${prev ? `href="${readHref(prev.book, prev.chapter)}"` : 'aria-disabled="true"'} aria-label="Previous chapter">${ICONS.prev}</a>
       <button class="chapter-title-btn" id="picker-btn" aria-haspopup="dialog"><span>${formatReference(book, chapter)}</span> ${ICONS.down}</button>
-      <button class="btn btn-small reader-tool" id="translation-btn" aria-label="Translation: ${translation().name}" title="Change translation">${abbr}</button>
+      <button class="btn btn-small reader-tool" id="translation-btn" aria-label="Translation: ${translation().name}${parallel ? ` with ${parallelAbbr}` : ''}" title="Change translation">${abbr}${parallel ? `<span class="tool-sub"> | ${parallelAbbr}</span>` : ''}</button>
       <button class="btn btn-small reader-tool" id="original-btn" aria-pressed="${original}" title="Show the original ${book < 39 ? 'Hebrew' : 'Greek'} word by word">${book < 39 ? 'עב' : 'Ελ'}<span class="tool-label"> Original</span></button>
       <button class="icon-btn" id="speak-btn" aria-label="Read aloud" title="Read aloud">${speaking ? ICONS.stop : ICONS.play}</button>
       <a class="icon-btn" ${next ? `href="${readHref(next.book, next.chapter)}"` : 'aria-disabled="true"'} aria-label="Next chapter">${ICONS.next}</a>
     </div>
-    <article class="passage${st.settings.paragraphMode && !original ? ' paragraphs' : ''}${original ? ' original-mode' : ''}" lang="en">
+    <article class="passage${st.settings.paragraphMode && !original && !parallel ? ' paragraphs' : ''}${original ? ' original-mode' : ''}${parallel ? ' parallel-mode' : ''}" lang="en">
       <h2>${BOOKS[book].name} · Chapter ${chapter}</h2>
       ${body}
     </article>
@@ -367,6 +388,19 @@ function renderReader() {
     store.update((s) => (s.settings.readerMode = original ? 'text' : 'original'));
     renderReader();
   };
+
+  if (parallel) {
+    loadTranslation(parallel)
+      .then((second) => {
+        if (current.book !== book || current.chapter !== chapter || route().view !== 'read') return;
+        main.querySelectorAll('.pr-b[data-pv]').forEach((el) => {
+          const v = Number(el.dataset.pv);
+          const text = second.books[book][chapter - 1][v - 1];
+          el.innerHTML = `<sup>${v}</sup>${text ? escapeHtml(text) : `<span class="omitted">Not included in the ${parallelAbbr}.</span>`}`;
+        });
+      })
+      .catch(() => toast('Could not load the second translation.'));
+  }
 
   if (!original && st.settings.crossRefs) {
     loadCrossRefs(book)

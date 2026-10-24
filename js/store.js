@@ -3,7 +3,7 @@
 const KEY = 'bible-app:v1';
 
 export const DEFAULTS = {
-  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry' },
+  settings: { theme: 'auto', fontSize: 19, font: 'serif', lineHeight: 1.7, verseNumbers: true, paragraphMode: false, speechRate: 1, translation: 'kjv', readerMode: 'text', crossRefs: false, commentary: 'matthew-henry', parallel: '' },
   highlights: {}, // verseKey -> color name
   bookmarks: {}, // verseKey -> timestamp
   notes: {}, // verseKey -> { text, updated }

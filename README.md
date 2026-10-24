@@ -5,6 +5,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 ## Features
 
 - **Five translations:** KJV, World English Bible (WEB), Berean Standard Bible (BSB), Young's Literal Translation (YLT) and the American Standard Version (ASV), all public domain.
+- **Side-by-side reading:** pick a second translation in the translation picker. It shows in a second column on tablets and desktops, and under each verse on phones.
 - **Original Hebrew and Greek:** turn on **Original** in the reader to see each verse word by word, with the original word, transliteration, literal English meaning and Strong's number. Hebrew reads right to left.
 - **Dictionary (lexicon):** tap any original word for its definition and grammar, how translators render it, how often it occurs, and every verse where it is used. You can also search by English word, Hebrew/Greek word or Strong's number.
 - **People & places dictionary:** 3,129 people, 1,006 places and 102 other names (angels and other spiritual beings, months, festivals, titles). Each entry has a short summary, family links (parents, siblings, spouses, children), the name in Hebrew/Greek, a map link for places, and every verse where it appears. Search by any form of a name (Abram/Abraham, Saul/Paul), browse A–Z, or filter people, places and other. Names are also recognised in the Search tab, in verse studies, and when you tap a name in the original text.

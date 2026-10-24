@@ -316,6 +316,24 @@ select.picker-filter { appearance: auto; }
 .comm-intro summary { font-family: var(--font-ui); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); }
 .comm-tabs button { cursor: pointer; }
 
+/* Side-by-side reading */
+.parallel-mode .pr-row { margin-bottom: 10px; }
+.parallel-mode .pr-row .verse { display: block; margin: 0; }
+.pr-b { font-size: .88em; color: var(--muted); border-left: 3px solid var(--border); padding-left: 10px; margin: 4px 0 0; }
+.pr-b sup { font-family: var(--font-ui); font-size: .6em; margin-right: 4px; }
+.pr-head { display: none; }
+.tool-sub { font-weight: 500; opacity: .75; }
+.parallel-choice { flex-wrap: wrap; }
+@media (min-width: 640px) {
+  .parallel-mode .pr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 8px; }
+  .pr-b { font-size: 1em; color: var(--text); border-left: 0; padding-left: 0; margin: 0; }
+  .pr-head { display: grid !important; font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--accent); position: sticky; top: 57px; background: var(--bg); padding: 6px 0; z-index: 2; }
+}
+@media (min-width: 900px) {
+  .parallel-mode, .parallel-mode ~ .chapter-footer, main:has(.parallel-mode) .reader-nav { max-width: 960px !important; }
+  .parallel-mode .pr-head { top: 116px; }
+}
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;
