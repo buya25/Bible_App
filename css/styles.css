@@ -350,6 +350,32 @@ select.picker-filter { appearance: auto; }
 .prose.reading { font-family: var(--font-reading); font-size: 17px; }
 #entry-links { margin: 4px 0 8px; }
 
+/* Maps */
+.map { height: 420px; border-radius: var(--radius); border: 1px solid var(--border); margin: 12px 0; position: relative; z-index: 0; background: var(--surface-2); }
+.map-small { height: 260px; }
+.map-controls { display: flex; gap: 8px; }
+.map-controls select { flex: 1; margin: 0; }
+.map-offline { position: absolute; left: 8px; bottom: 24px; z-index: 500; background: var(--surface); color: var(--muted); font-size: 12px; padding: 4px 8px; border-radius: 8px; }
+.leaflet-container { font-family: var(--font-ui); }
+.leaflet-container svg { width: auto; height: auto; stroke-linecap: initial; stroke-linejoin: initial; } /* undo the icon sizing rule */
+.leaflet-popup-content a { color: var(--accent); }
+:root[data-theme='dark'] .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }
+.chapter-map-link { text-align: center; margin: -8px 0 24px; }
+@media (max-width: 560px) { .map { height: 320px; } }
+
+/* Timeline */
+.era-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.era-nav a { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--text); text-decoration: none; }
+.era { scroll-margin-top: 80px; }
+.timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--border); }
+.tl-item { position: relative; display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 6px 0; }
+.tl-item::before { content: ''; position: absolute; left: -24px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.tl-item.tl-reign::before, .tl-item.tl-judge::before, .tl-item.tl-prophet::before, .tl-item.tl-period::before { background: var(--accent); border-radius: 3px; }
+.tl-year { font-size: 13px; font-weight: 600; color: var(--muted); padding-top: 2px; white-space: nowrap; }
+.tl-name a { color: var(--text); }
+.tl-name a:hover { color: var(--accent); }
+@media (max-width: 560px) { .tl-item { grid-template-columns: 1fr; gap: 0; } }
+
 /* Action bar */
 .action-bar {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 40;

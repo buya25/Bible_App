@@ -171,6 +171,7 @@ export async function renderNamePage(main, id, bible, abbr) {
       ${geo || relations || names ? `<div class="relations">
         ${names ? `<div class="rel-row"><span class="rel-label">Name in the original</span><div class="rel-items">${names}</div></div>` : ''}
         ${geo}${relations}</div>` : ''}
+      ${entry.geo ? '<div class="map map-small" id="place-map"></div>' : ''}
     </section>
     ${entry.a || entry.s ? `<section class="card prose article">
       <h3 style="margin-top:0">About ${escapeHtml(entry.n)}</h3>
@@ -183,6 +184,8 @@ export async function renderNamePage(main, id, bible, abbr) {
       <div id="name-refs">${list(PAGE) || '<div class="empty">No verse references recorded.</div>'}</div>
       ${refs.length > PAGE ? `<p><button class="btn" id="more-name-refs">Show all ${refs.length} verses</button></p>` : ''}
     </section>`;
+  const mapEl = document.getElementById('place-map');
+  if (mapEl) import('./maps.js').then((m) => m.drawPlaceMap(mapEl, id)).catch(() => mapEl.remove());
   const more = document.getElementById('more-name-refs');
   if (more) {
     more.onclick = () => {

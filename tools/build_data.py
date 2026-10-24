@@ -7,6 +7,7 @@ Usage: python3 tools/build_data.py <sources-dir>
   bible_databases/sources/extras/cross_references.txt   OpenBible.info cross references (CC BY), via scrollmapper
   commentaries/<id>.en.jsonl.gz                        github.com/joathanmf/bibliaco-dados release classicos-en-2026-10-19
                                                         (from bible.helloao.org; public domain)
+  bible-data/BibleData-Event.csv, BibleData-Epoch.csv  github.com/BradyStephenson/bible-data (CC BY 4.0)
   bible-data/NavesTopicalDictionary.csv                 github.com/BradyStephenson/bible-data (CC BY 4.0)
   bible-dictionary-dataset/data/01_parsed/*.json        github.com/neuu-org/bible-dictionary-dataset (CC BY 4.0;
                                                         Easton 1897 + Smith 1863, public domain)
@@ -27,6 +28,8 @@ Outputs (all under data/):
   commentary/<id>/<book>.json.gz  commentary sections per chapter, gzip-compressed (decompressed in the browser)
   commentary/index.json    available commentaries
   topics/<letter>.json     Nave's Topical Bible, with verse references parsed
+  places/<book>.json       places (with map locations) mentioned in each chapter
+  timeline.json            dated events and periods
   topics/index.json        topic search index
   dictionary/<letter>.json Easton's and Smith's Bible dictionaries
   dictionary/index.json    dictionary search index
@@ -502,11 +505,20 @@ def build_names(kjv):
                     alt[a.lower()] = a
         alt = sorted(alt.values())
         strongs = e.pop('strongs')
-        index.append([uid, e['n'], e['k'], e.get('b') or e.get('d') or e.get('t', ''), len(e['r']), '|'.join(alt), '|'.join(strongs), e['t'], e.get('anon', 0)])
+        geo = [round(x, 4) for x in e['geo']] if e.get('geo') and any(e['geo']) else []
+        index.append([uid, e['n'], e['k'], e.get('b') or e.get('d') or e.get('t', ''), len(e['r']), '|'.join(alt), '|'.join(strongs), e['t'], e.get('anon', 0)] + geo)
     for name, data in chunks.items():
         write_json(f'names/{name}.json', data)
     index.sort(key=lambda x: (x[1].lower(), -x[4]))
     write_json('names/index.json', index)
+    # Places with a known location, per chapter: places/<book>.json = {chapter: [[id, verses]]}
+    by_chapter = defaultdict(lambda: defaultdict(Counter))
+    for uid, e in entries.items():
+        if e['k'] == 'place' and e.get('geo') and any(e['geo']):
+            for ref in e['r']:
+                by_chapter[ref // 1000000][ref // 1000 % 1000][uid] += 1
+    for b in range(66):
+        write_json(f'places/{b}.json', {str(c): sorted(ids.items(), key=lambda x: -x[1]) for c, ids in sorted(by_chapter[b].items())})
     kinds = Counter(e['k'] for e in entries.values())
     print(f'  names: {len(entries)} entries {dict(kinds)}, {sum(1 for e in entries.values() if "geo" in e)} with map location')
 
@@ -714,6 +726,68 @@ def build_dictionary():
     print(f'  bible dictionary: {len(index)} entries')
 
 
+# ---------------------------------------------------------------- timeline
+
+AH_TO_BC = 3962  # BibleData: year 1 after Creation (AH) = 3961 BC
+
+ERAS = [  # [start year, name]; negative = BC. Boundaries follow BibleData's chronology for the Old Testament.
+    [-4000, 'Beginnings'], [-1882, 'The Patriarchs'], [-1662, 'Israel in Egypt'], [-1447, 'Exodus and Wilderness'],
+    [-1407, 'Conquest and Judges'], [-1023, 'The United Kingdom'], [-931, 'The Divided Kingdom'], [-586, 'Exile in Babylon'],
+    [-538, 'Return and Restoration'], [-400, 'Between the Testaments'], [-6, 'The Life of Jesus'], [30, 'The Early Church'],
+]
+
+# New Testament dates are not in BibleData; these are common approximate scholarly dates.
+NT_EVENTS = [
+    (-5, 'Birth of Jesus (about 6–4 BC)', 'Matt.2.1'), (-4, 'Death of Herod the Great', 'Matt.2.19'),
+    (8, 'Jesus at the temple aged twelve', 'Luke.2.42'), (27, 'John the Baptist begins preaching; Jesus is baptized', 'Luke.3.1'),
+    (28, 'Sermon on the Mount', 'Matt.5.1'), (29, 'Feeding of the five thousand', 'John.6.10'),
+    (30, 'Crucifixion and resurrection of Jesus (AD 30 or 33)', 'Luke.24.6'), (30, 'Pentecost: the church begins', 'Acts.2.1'),
+    (34, 'Martyrdom of Stephen', 'Acts.7.59'), (35, 'Conversion of Saul (Paul)', 'Acts.9.3'),
+    (44, 'James son of Zebedee killed by Herod Agrippa', 'Acts.12.2'), (47, "Paul's first missionary journey (about AD 46–48)", 'Acts.13.4'),
+    (49, 'Council of Jerusalem', 'Acts.15.6'), (50, "Paul's second missionary journey (about AD 49–52)", 'Acts.15.40'),
+    (54, "Paul's third missionary journey (about AD 53–57)", 'Acts.18.23'), (57, 'Paul arrested in Jerusalem', 'Acts.21.33'),
+    (60, 'Paul sails to Rome', 'Acts.27.1'), (62, 'Paul under house arrest in Rome', 'Acts.28.30'),
+    (70, 'Romans destroy Jerusalem and the temple', 'Luke.21.6'), (95, 'John receives the Revelation on Patmos (about AD 95)', 'Rev.1.9'),
+]
+SPAN_TYPES = {'Reign': 'reign', 'Judge': 'judge', 'Prophet': 'prophet', 'Bondage': 'period', 'Exile': 'period', 'Captivity': 'period'}
+EVENT_TYPES = {'Unique', 'Travel', 'Covenant', 'Battle', 'Prophesy', 'Marriage', 'Message', 'Construction', 'Meeting',
+               'Destruction', 'Vision', 'Birth', 'Death'}
+
+
+def nave_ref(ref, kjv):
+    m = re.match(r'^(1JHN|[1-3]?[A-Z]{2,3}) (\d+):(\d+)', ref or '')
+    if not m or m.group(1) not in NAVE_CODES:
+        return None
+    b, c, v = NAVE_CODES[m.group(1)], int(m.group(2)), int(m.group(3))
+    return b * 1000000 + c * 1000 + v if c <= len(kjv[b]) and v <= len(kjv[b][c - 1]) else None
+
+
+def build_timeline(kjv):
+    base = os.path.join(SRC, 'bible-data')
+    events = []
+    for r in csv.DictReader(open(os.path.join(base, 'BibleData-Event.csv'), encoding='utf-8-sig')):
+        if r['event_type'] not in EVENT_TYPES or not r['event_year_ah']:
+            continue
+        name = r['event_name'].replace('G-d', 'God').strip()
+        estimate = name.endswith('*')
+        events.append([int(r['event_year_ah']) - AH_TO_BC, name.rstrip('*').strip(), nave_ref(r['event_reference_id'], kjv),
+                       1 if estimate else 0, r['event_type'].lower()])
+    for year, name, ref in NT_EVENTS:
+        events.append([year, name, osis_ref(ref, kjv), 1, 'nt'])
+    spans = []
+    for r in csv.DictReader(open(os.path.join(base, 'BibleData-Epoch.csv'), encoding='utf-8-sig')):
+        kind = SPAN_TYPES.get(r['epoch_type'])
+        if not kind or not r['start_year_ah'] or not r['end_year_ah']:
+            continue
+        estimate = 'HYPOTHESIS' in r['epoch_notes']
+        spans.append([int(r['start_year_ah']) - AH_TO_BC, int(r['end_year_ah']) - AH_TO_BC, r['epoch_name'].replace('G-d', 'God').strip(),
+                      kind, nave_ref(r['start_year_reference_id'], kjv), 1 if estimate else 0])
+    events.sort(key=lambda e: e[0])
+    spans.sort(key=lambda s: (s[0], s[1]))
+    write_json('timeline.json', {'eras': ERAS, 'events': events, 'spans': spans})
+    print(f'  timeline: {len(events)} events, {len(spans)} reigns/judges/prophets/periods')
+
+
 if __name__ == '__main__':
     print('translations')
     kjv, meta = build_translations()
@@ -731,6 +805,8 @@ if __name__ == '__main__':
     print('topics & dictionary')
     build_topics(kjv)
     build_dictionary()
+    print('timeline')
+    build_timeline(kjv)
     files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json*'), recursive=True)
                    if not p.endswith('manifest.json'))
     write_json('manifest.json', files)

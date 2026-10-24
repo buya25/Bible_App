@@ -13,6 +13,8 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Commentaries:** Matthew Henry (1706–1721, devotional and practical) and Jamieson, Fausset & Brown (1871, concise verse-by-verse notes), both public domain. Select verses and tap **Commentary**, or see them on the verse study page. Bible references inside the notes are tappable.
 - **Topical index:** Nave's Topical Bible, with 5,319 subjects (faith, prayer, marriage, money…). Each is grouped by theme with its verses, which you can tap or read inline, and "See also" links between topics.
 - **Bible dictionary:** about 6,000 articles from Easton's (1897) and Smith's (1863) dictionaries on customs, objects, places, measures and ideas, linked to matching topics and people & places.
+- **Maps:** every chapter that mentions places links to a map of them, and the Study tab maps all places in a book or chapter. Each place's page has its own map. Maps use the bundled Leaflet library; the OpenStreetMap background needs an internet connection.
+- **Timeline:** 250 events and 95 reigns, judges, prophets and periods, grouped into eras from Creation to the early church. It can be filtered to kings, judges or prophets, and explains how the dates were worked out.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
@@ -65,6 +67,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/crossrefs.js` | Cross references: lookup, labels, dialog and inline display |
 | `js/commentary.js` | Commentaries: loading (gzip), section lookup, dialog and panel |
 | `js/topics.js` | Topical index and Bible dictionary: search, browse and pages |
+| `js/maps.js`, `js/timeline.js` | Maps of places; timeline of events and reigns |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |
@@ -73,6 +76,8 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `data/crossrefs/` | Related verses for every verse (one file per book) |
 | `data/commentary/` | Commentaries, one gzip-compressed file per book |
 | `data/topics/`, `data/dictionary/` | Nave's topics; Easton's and Smith's dictionary articles |
+| `data/places/`, `data/timeline.json` | Places mentioned per chapter; dated events and periods |
+| `vendor/leaflet/` | Leaflet 1.9.4 map library (BSD-2-Clause) |
 | `data/variants.json` | Verses where manuscripts differ |
 | `tools/build_data.py` | Regenerates everything in `data/` from the open sources |
 | `sw.js`, `manifest.webmanifest` | Offline support and installability |
@@ -87,6 +92,8 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | Matthew Henry, Jamieson-Fausset-Brown commentaries | [Free Use Bible API](https://bible.helloao.org) via [joathanmf/bibliaco-dados](https://github.com/joathanmf/bibliaco-dados) (checksums verified) | Public domain |
 | Nave's Topical Bible | [BradyStephenson/bible-data](https://github.com/BradyStephenson/bible-data) | CC BY 4.0 (text public domain) |
 | Easton's and Smith's Bible dictionaries | [neuu-org/bible-dictionary-dataset](https://github.com/neuu-org/bible-dictionary-dataset) | CC BY 4.0 (text public domain) |
+| Timeline (events, reigns, judges, prophets) | [BradyStephenson/bible-data](https://github.com/BradyStephenson/bible-data) | CC BY 4.0 |
+| Map library and map tiles | [Leaflet](https://leafletjs.com), [OpenStreetMap](https://www.openstreetmap.org/copyright) | BSD-2-Clause; ODbL (tiles need attribution, kept on the map) |
 | WEB | [seven1m/open-bibles](https://github.com/seven1m/open-bibles) | Public domain |
 | Hebrew OT (TAHOT), Greek NT (TAGNT), lexicons (TBESH, TBESG), people & places (TIPNR) | [STEPBible.org](https://github.com/STEPBible/STEPBible-Data), Tyndale House, Cambridge | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 
@@ -97,3 +104,5 @@ The STEPBible data is reformatted, not reworded. `tools/build_data.py` keeps the
 ```sh
 python3 tools/build_data.py /path/to/sources
 ```
+
+OpenStreetMap's public tile servers are meant for light use. If the app gets heavy traffic, switch the tile URL in `js/maps.js` to a tile provider with a suitable plan.

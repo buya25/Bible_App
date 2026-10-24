@@ -5,6 +5,7 @@ import { store } from './store.js';
 import { escapeHtml, readHref, toast } from './util.js';
 import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
 import { openCommentaryDialog } from './commentary.js';
+import { loadChapterPlaces } from './maps.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -238,7 +239,7 @@ function renderStudy(parts, params) {
       });
     }
   }
-  return renderStudyHome(main, ['dictionary', 'people', 'topics', 'bible-dictionary', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params).catch(() => {
+  return renderStudyHome(main, ['dictionary', 'people', 'topics', 'bible-dictionary', 'maps', 'timeline', 'differences', 'about'].includes(parts[0]) ? parts[0] : 'dictionary', params, { book: current.book }).catch(() => {
     main.innerHTML = '<div class="empty">Could not load study data. Check your connection.</div>';
   });
 }
@@ -391,6 +392,15 @@ function renderReader() {
     store.update((s) => (s.settings.readerMode = original ? 'text' : 'original'));
     renderReader();
   };
+
+  // Link to a map when the chapter mentions places with known locations.
+  loadChapterPlaces(book)
+    .then((places) => {
+      const list = places[chapter];
+      if (!list?.length || current.book !== book || current.chapter !== chapter) return;
+      main.querySelector('.chapter-footer')?.insertAdjacentHTML('afterend', `<p class="chapter-map-link"><a class="btn btn-small" href="#/study/maps?book=${book}&chapter=${chapter}">Map: ${list.length} place${list.length === 1 ? '' : 's'} in this chapter</a></p>`);
+    })
+    .catch(() => {});
 
   if (parallel) {
     loadTranslation(parallel)
