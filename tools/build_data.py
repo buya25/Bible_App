@@ -18,6 +18,8 @@ Usage: python3 tools/build_data.py <sources-dir>
 
 Outputs (all under data/):
   translations/<id>.json   verse text aligned to KJV versification ("" = verse absent)
+  translations/<id>/<book>.json  the same, one file per book (fast first load)
+  structure.json           number of verses in every chapter
   original/<book>.json     Hebrew/Greek words per verse + manuscript notes
   lexicon/<H|G><n>.json    lexicon entries with usage statistics, chunked by Strong's number
   lexicon/index.json       compact search index for the dictionary
@@ -149,12 +151,17 @@ def build_translations():
         web[44][16][25 + i] = web[44][14].pop(24 + i)
     sources = {'kjv': None, 'web': web,
                'bsb': load_scrollmapper('BSB'), 'ylt': load_scrollmapper('YLT'), 'asv': load_scrollmapper('ASV')}
+    # Verse counts per chapter (shared by every translation, which are aligned to KJV numbering).
+    write_json('structure.json', [[len(ch) for ch in book] for book in kjv])
     meta = []
     for tid, abbr, name, year, desc in TRANSLATIONS:
         books = kjv if tid == 'kjv' else align(sources[tid], kjv)
         missing = sum(1 for b in books for c in b for v in c if not v)
         print(f'  {abbr}: {sum(len(c) for b in books for c in b)} verses, {missing} empty')
         write_json(f'translations/{tid}.json', {'id': tid, 'abbr': abbr, 'name': name, 'books': books})
+        # One small file per book, so the app can show the first chapter without the whole translation.
+        for b, chapters in enumerate(books):
+            write_json(f'translations/{tid}/{b}.json', chapters)
         meta.append({'id': tid, 'abbr': abbr, 'name': name, 'year': year, 'description': desc})
     return kjv, meta
 
@@ -808,5 +815,5 @@ if __name__ == '__main__':
     print('timeline')
     build_timeline(kjv)
     files = sorted(os.path.relpath(p, os.path.join(OUT, '..')) for p in glob.glob(os.path.join(OUT, '**/*.json*'), recursive=True)
-                   if not p.endswith('manifest.json'))
+                   if not p.endswith('manifest.json') and not re.search(r'translations/\w+/\d+\.json$', p))
     write_json('manifest.json', files)

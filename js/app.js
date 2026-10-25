@@ -3,7 +3,7 @@ import { PLANS, buildSchedule, describeDay, toDateString, currentPlanDay, comput
 import { verseOfTheDay } from './votd.js';
 import { store } from './store.js';
 import { escapeHtml, readHref, toast } from './util.js';
-import { loadTranslationList, loadTranslation, loadVariants, loadOriginal, allDataFiles } from './data.js';
+import { loadTranslationList, loadTranslation, loadTranslationBook, loadStructure, loadVariants, loadOriginal, allDataFiles } from './data.js';
 import { openCommentaryDialog } from './commentary.js';
 import { loadChapterPlaces } from './maps.js';
 import { newItem, memoryKey, renderMemoryList, renderPractice, dueItems } from './memory.js';
@@ -24,6 +24,9 @@ const dialog = document.getElementById('dialog');
 const actionBar = document.getElementById('action-bar');
 
 let bible = null;
+let bibleReady = false; // the full translation has loaded (Search, Library and Study need every book)
+let pendingFull = false; // a page is waiting for the full translation
+const loadedBooks = new Set(); // books loaded individually before the full translation arrived
 let selection = new Set(); // selected verse numbers in the current chapter
 let current = { book: 42, chapter: 1 };
 let translations = []; // [{ id, abbr, name, year, description }]
@@ -181,6 +184,7 @@ function openSettings() {
 async function switchTranslation(id) {
   try {
     bible = await loadTranslation(id);
+    bibleReady = true;
   } catch {
     toast('Could not load that translation. Check your connection.');
     return;
@@ -325,6 +329,20 @@ function router() {
     main.innerHTML = '<div class="loading">Loading the Bible…</div>';
     return;
   }
+  // Until the whole translation has arrived, only Today and the reader can show (they load just the book they need).
+  if (!bibleReady && !['today', 'read', ''].includes(view)) {
+    main.innerHTML = '<div class="loading">Loading the Bible…</div>';
+    pendingFull = true;
+    return;
+  }
+  if (!bibleReady && view === 'today') {
+    const votdBook = parseReference(verseOfTheDay(), bible)?.book;
+    if (votdBook !== undefined && !loadedBooks.has(votdBook)) {
+      main.innerHTML = '<div class="loading">Loading…</div>';
+      ensureBook(votdBook).then(router, () => (pendingFull = true));
+      return;
+    }
+  }
   const views = { today: renderToday, read: () => openChapterFromRoute(parts), search: () => renderSearch(params), study: () => renderStudy(parts, params), stories: () => renderStoriesView(parts), memorize: () => renderPractice(main, store), plans: renderPlans, library: () => renderLibrary(parts[0]) };
   (views[view] || renderToday)();
 }
@@ -468,6 +486,13 @@ function openChapterFromRoute(parts) {
   }
   const book = findBook(parts[0]);
   const chapter = Math.max(1, parseInt(parts[1], 10) || 1);
+  if (book >= 0 && !bibleReady && !loadedBooks.has(book)) {
+    main.innerHTML = '<div class="loading">Loading…</div>';
+    ensureBook(book).then(router, () => {
+      main.innerHTML = '<div class="empty">This book could not be loaded. Check your connection.</div>';
+    });
+    return;
+  }
   if (book < 0 || chapter > bible.books[book].length) {
     main.innerHTML = `<div class="empty">That passage couldn't be found. <a href="#/read">Go to reader</a></div>`;
     return;
@@ -1197,12 +1222,40 @@ window.addEventListener('hashchange', router);
 applySettings();
 router();
 
-Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
-  .then(async ([list, variants]) => {
+/* ---------- Startup ----------
+ * For a fast first screen, start with a skeleton Bible (verse counts only) plus the one book the
+ * first page needs, then load the full translation in the background and swap it in.
+ */
+const skeletonBible = (structure) => ({ partial: true, books: structure.map((chapters) => chapters.map((n) => new Array(n).fill(''))) });
+
+async function ensureBook(book) {
+  if (bibleReady || loadedBooks.has(book)) return;
+  const id = translation().id;
+  const chapters = await loadTranslationBook(id, book);
+  if (!bibleReady && bible?.partial && translation().id === id) {
+    bible.books[book] = chapters;
+    loadedBooks.add(book);
+  }
+}
+
+function booksForFirstPage() {
+  const { view, parts } = route();
+  const last = store.get().history[0];
+  if (view === 'read') return [parts[0] ? findBook(parts[0]) : (last?.book ?? 42)].filter((b) => b >= 0);
+  if (!view || view === 'today') return [parseReference(verseOfTheDay(), bible)?.book].filter((b) => b !== undefined);
+  return [];
+}
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+Promise.all([loadTranslationList(), loadStructure()])
+  .then(async ([list, structure]) => {
     translations = list;
-    variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
-    bible = await loadTranslation(translation().id).catch(() => loadTranslation('kjv'));
+    bible = skeletonBible(structure);
     audio.initAudio({ store, getBible: () => bible, getAbbr: () => translation().abbr });
+    await Promise.all(booksForFirstPage().map((b) => ensureBook(b).catch(() => {})));
     router();
     recordVisit(store);
     if (!store.get().onboarded) showTour();
@@ -1211,11 +1264,29 @@ Promise.all([loadTranslationList(), loadVariants().catch(() => [])])
       requestPersistence();
     }
     checkReminder(store, { title: 'Time for your Bible reading', body: 'You haven’t read today yet. Open today’s verse and reading plan.' });
+
+    // The rest arrives in the background.
+    loadTranslation(translation().id)
+      .catch(() => loadTranslation('kjv'))
+      .then((full) => {
+        if (bible.partial) {
+          bible = full;
+          bibleReady = true;
+          if (pendingFull) {
+            pendingFull = false;
+            router();
+          }
+        }
+      })
+      .catch(() => toast('Some of the Bible text could not be loaded. Check your connection.'))
+      .finally(registerServiceWorker); // after the big download, so the offline copy reuses it
+    loadVariants()
+      .then((variants) => {
+        variantMap = new Map(variants.filter((x) => x.k || x.m || x.x).map((x) => [verseKey(...x.r), x]));
+        if (route().view === 'read' && !selection.size && store.get().settings.readerMode !== 'original') renderReader();
+      })
+      .catch(() => {});
   })
   .catch(() => {
     main.innerHTML = '<div class="empty">The Bible text could not be loaded. Check your connection and refresh.</div>';
   });
-
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}

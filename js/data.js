@@ -17,6 +17,10 @@ export function load(path) {
 
 export const loadTranslationList = () => load('data/translations/index.json');
 export const loadTranslation = (id) => load(`data/translations/${id}.json`);
+/** One book of a translation (array of chapters), for a fast first page. */
+export const loadTranslationBook = (id, book) => load(`data/translations/${id}/${book}.json`);
+/** Verse counts per chapter for every book (all translations share KJV numbering). */
+export const loadStructure = () => load('data/structure.json');
 export const loadOriginal = (book) => load(`data/original/${book}.json`);
 export const loadVariants = () => load('data/variants.json');
 export const loadLexiconIndex = () => load('data/lexicon/index.json');
