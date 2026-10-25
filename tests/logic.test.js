@@ -50,7 +50,7 @@ test('search finds words and phrases with scope', () => {
 });
 
 test('every reading plan covers each chapter exactly once with no empty days', () => {
-  for (const plan of PLANS) {
+  for (const plan of PLANS.filter((p) => !p.stories)) {
     const schedule = buildSchedule(bible, plan);
     assert.equal(schedule.length, plan.days, plan.id);
     assert.ok(schedule.every((d) => d.length > 0), `${plan.id} has an empty day`);

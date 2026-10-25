@@ -6,13 +6,20 @@ import { escapeHtml, readHref } from './util.js';
 
 export const loadStorySections = () => load('data/stories.json');
 
-/** All stories in order: [{ id, title, ref, summary, section, index }]. */
+/** All stories in order: [{ id, title, ref, summary, section, index, book, chapter, verse }]. */
 export async function loadStories() {
   const sections = await loadStorySections();
   const list = [];
-  for (const s of sections) for (const [id, title, ref, summary] of s.stories) list.push({ id, title, ref, summary, section: s.section, index: list.length });
+  for (const s of sections) {
+    for (const [id, title, ref, summary] of s.stories) {
+      const p = parsePassage(ref);
+      list.push({ id, title, ref, summary, section: s.section, index: list.length, book: p.book, chapter: p.start.chapter, verse: p.start.verse });
+    }
+  }
   return list;
 }
+
+export const loadStoryQuestions = () => load('data/story-questions.json');
 
 /** "Genesis 1:1-2:3", "1 Samuel 17:1-58" → { book, start: {chapter, verse}, end: {chapter, verse} } or null. */
 export function parsePassage(ref) {
@@ -132,6 +139,7 @@ export async function renderStory(main, id, ctx) {
           .join('')}</div>
       </div>
       <div class="story-text passage">${text}</div>
+      <section class="talk" id="story-questions" hidden></section>
       <div class="row story-end">
         <label class="small"><input type="checkbox" id="story-numbers" ${showNumbers ? 'checked' : ''}> Show verse numbers</label>
         <span class="spacer"></span>
@@ -143,7 +151,21 @@ export async function renderStory(main, id, ctx) {
       ${next ? `<a class="btn btn-primary" href="${storyHref(next.id)}" data-finish>${escapeHtml(next.title)} →</a>` : `<a class="btn btn-primary" href="#/stories" data-finish>Finish</a>`}
     </nav>`;
   window.scrollTo(0, 0);
-  const markRead = () => store.update((s) => (s.storiesRead = { ...(s.storiesRead || {}), [id]: Date.now() }));
+  loadStoryQuestions()
+    .then((all) => {
+      const qs = all[id];
+      const box = main.querySelector('#story-questions');
+      if (!qs?.length || !box) return;
+      box.innerHTML = `<h2>Talk about it</h2><p class="muted small">For families, small groups or your own reflection.</p><ol>${qs.map((q) => `<li>${escapeHtml(q)}</li>`).join('')}</ol>`;
+      box.hidden = false;
+    })
+    .catch(() => {});
+  const markRead = () =>
+    store.update((s) => {
+      s.storiesRead = { ...(s.storiesRead || {}), [id]: Date.now() };
+      // On the "one story a day" plan, finishing a story completes its day.
+      if (s.plan?.id === 'stories') s.plan.done[`day:${story.index}`] = true;
+    });
   main.querySelector('[data-finish]').addEventListener('click', markRead);
   // Reaching the end of the story counts as reading it.
   const end = main.querySelector('.story-end');

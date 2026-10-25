@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parsePassage, passageVerses, toParagraphs } from '../js/stories.js';
+import { PLANS, buildSchedule, describeDay } from '../js/plans.js';
 
 const read = (p) => JSON.parse(readFileSync(new URL(`../${p}`, import.meta.url), 'utf8'));
 const kjv = read('data/translations/kjv.json');
@@ -41,4 +42,22 @@ test('story text is grouped into paragraphs without losing verses', () => {
   const paras = toParagraphs(verses);
   assert.equal(paras.flat().length, verses.length);
   assert.ok(paras.length >= 4 && paras.every((p) => p.length <= 6));
+});
+
+test('every story has discussion questions', () => {
+  const questions = read('data/story-questions.json');
+  for (const [id] of stories) {
+    assert.ok(Array.isArray(questions[id]) && questions[id].length >= 2, `no questions for ${id}`);
+    for (const q of questions[id]) assert.match(q, /\?\s*$|\?["”]\s*$/, `${id}: "${q}" is not a question`);
+  }
+  for (const id of Object.keys(questions)) assert.ok(stories.some(([s]) => s === id), `questions for unknown story ${id}`);
+});
+
+test('the stories plan has one story per day', () => {
+  const plan = PLANS.find((p) => p.stories);
+  const list = stories.map(([id, title, ref], index) => ({ id, title, ref, index, ...(({ book, start }) => ({ book, chapter: start.chapter }))(parsePassage(ref)) }));
+  const schedule = buildSchedule(kjv, plan, list);
+  assert.equal(schedule.length, stories.length);
+  assert.equal(schedule[0][0].story.id, 'creation');
+  assert.equal(describeDay(schedule[0]), 'Creation (Genesis 1:1-2:3)');
 });

@@ -13,7 +13,8 @@ import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
 import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount, installInfo } from './safety.js';
 import { openTour, openMoreSheet } from './onboarding.js';
 import * as audio from './audio.js';
-import { renderStoriesHome, renderStory, storyCardHtml } from './stories.js';
+import { openFeedback } from './feedback.js';
+import { renderStoriesHome, renderStory, storyCardHtml, storyHref, loadStories } from './stories.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -24,6 +25,7 @@ const dialog = document.getElementById('dialog');
 const actionBar = document.getElementById('action-bar');
 
 let bible = null;
+let storyList = []; // all stories, for the "one story a day" plan
 let bibleReady = false; // the full translation has loaded (Search, Library and Study need every book)
 let pendingFull = false; // a page is waiting for the full translation
 const loadedBooks = new Set(); // books loaded individually before the full translation arrived
@@ -105,6 +107,10 @@ function openSettings() {
           <div class="row" style="margin-top:8px"><input type="time" class="picker-filter" style="width:auto;margin:0" value="${s.reminderTime}" data-time aria-label="Reminder time"><button class="btn btn-small" data-ics>Add to calendar</button></div>
           <p class="muted small">Notifications appear when you open the app after this time (and in the background on some installed apps). A calendar reminder works on every device.</p>
         </div>
+        <div class="field"><span class="label">Feedback</span>
+          <p class="muted small">Found a problem or have an idea? We’d love to hear it.</p>
+          <button class="btn btn-small" data-feedback>Send feedback</button>
+        </div>
         <div class="field"><span class="label">Your data</span>
           <p class="muted small">Highlights, notes, prayers, memory verses and plan progress are stored only on this device. Export a backup to keep them safe or move them to another device.${s.lastBackup ? ` Last backup: ${new Date(s.lastBackup).toLocaleDateString()}.` : ''}</p>
           <p class="muted small" id="storage-status"></p>
@@ -139,6 +145,10 @@ function openSettings() {
     if (t?.hasAttribute('data-download')) downloadEverything(t);
     if (t?.hasAttribute('data-ics')) downloadIcs(store.get().settings.reminderTime);
     if (t?.hasAttribute('data-preview')) audio.preview(store.get().settings);
+    if (t?.hasAttribute('data-feedback')) {
+      dialog.close();
+      return openFeedback(dialog, store);
+    }
     if (t?.hasAttribute('data-install')) promptInstall().then((ok) => ok && toast('Installed! Open Bible from your home screen.'));
     if (t?.hasAttribute('data-tour')) {
       dialog.close();
@@ -403,12 +413,12 @@ function renderToday() {
   let planHtml = `<p class="muted">Build a daily habit with a reading plan.</p><a class="btn" href="#/plans">Choose a plan</a>`;
   if (st.plan) {
     const plan = PLANS.find((p) => p.id === st.plan.id);
-    const schedule = buildSchedule(bible, plan);
+    const schedule = buildSchedule(bible, plan, storyList);
     const day = currentPlanDay(st.plan.startDate, new Date(), schedule.length);
     const done = Boolean(st.plan.done[`day:${day}`]);
     planHtml = `<strong>${plan.name}</strong> · Day ${day + 1} of ${schedule.length}
-      <p class="votd-text" style="font-size:18px;margin-top:8px">${describeDay(schedule[day])}</p>
-      <div class="row"><a class="btn btn-primary" href="${readHref(schedule[day][0].book, schedule[day][0].chapter)}">${done ? 'Read again' : 'Start reading'}</a><a class="btn" href="#/plans">${done ? '✓ Completed' : 'Plan details'}</a></div>`;
+      <p class="votd-text" style="font-size:18px;margin-top:8px">${escapeHtml(describeDay(schedule[day] || []))}</p>
+      <div class="row"><a class="btn btn-primary" href="${planItemHref(schedule[day]?.[0])}">${done ? 'Read again' : 'Start reading'}</a><a class="btn" href="#/plans">${done ? '✓ Completed' : 'Plan details'}</a></div>`;
   }
 
   main.innerHTML = `
@@ -432,7 +442,9 @@ function renderToday() {
       <div><div class="stat">${Object.keys(st.highlights).length}</div><div class="muted small">highlights</div></div><span class="spacer"></span>
       <div><div class="stat">${Object.keys(st.notes).length}</div><div class="muted small">notes</div></div>
     </section>
-    </div>`;
+    </div>
+    <p class="today-footer small"><button class="link-btn" id="today-feedback">Send feedback</button> · <a href="#/study/about">About the texts</a></p>`;
+  document.getElementById('today-feedback').onclick = () => openFeedback(dialog, store);
   storyCardHtml(store)
     .then((html) => {
       const slot = document.getElementById('story-card-slot');
@@ -1089,13 +1101,16 @@ function renderSearch(params) {
 
 /* ---------- Plans ---------- */
 
+/** Link for one reading in a plan: a story page, or a chapter in the reader. */
+const planItemHref = (r) => (!r ? '#/plans' : r.story ? storyHref(r.story.id) : readHref(r.book, r.chapter));
+
 function renderPlans() {
   document.title = 'Reading plans — Bible';
   const st = store.get();
   let activeHtml = '';
   if (st.plan) {
     const plan = PLANS.find((p) => p.id === st.plan.id);
-    const schedule = buildSchedule(bible, plan);
+    const schedule = buildSchedule(bible, plan, storyList);
     const today = currentPlanDay(st.plan.startDate, new Date(), schedule.length);
     const shown = renderPlans.day ?? today;
     const doneCount = Object.keys(st.plan.done).length;
@@ -1114,7 +1129,7 @@ function renderPlans() {
           ${shown !== today ? `<button class="btn btn-small" data-day="${today}">Today</button>` : ''}
         </div>
         <ul class="reading-list">
-          ${schedule[shown].map((r) => `<li><a href="${readHref(r.book, r.chapter)}">${formatReference(r.book, r.chapter)}</a></li>`).join('')}
+          ${schedule[shown].map((r) => `<li><a href="${planItemHref(r)}">${r.story ? `${escapeHtml(r.story.title)} <span class="muted small">${escapeHtml(r.story.ref)}</span>` : formatReference(r.book, r.chapter)}</a></li>`).join('')}
           <li><label class="row"><input type="checkbox" data-done="${shown}" ${st.plan.done[`day:${shown}`] ? 'checked' : ''}> Mark day ${shown + 1} complete</label></li>
         </ul>
         <div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn btn-small" data-quit>Stop plan</button></div>
@@ -1125,7 +1140,7 @@ function renderPlans() {
     ${activeHtml}
     <h2>${st.plan ? 'Other plans' : 'Choose a plan'}</h2>
     ${PLANS.filter((p) => p.id !== st.plan?.id)
-      .map((p) => `<section class="card"><strong>${p.name}</strong><p class="muted small">${p.description} · ${p.days} days</p><button class="btn btn-small btn-primary" data-start="${p.id}">Start this plan</button></section>`)
+      .map((p) => `<section class="card"><strong>${p.name}</strong><p class="muted small">${p.description} · ${p.days || storyList.length} days</p><button class="btn btn-small btn-primary" data-start="${p.id}">Start this plan</button></section>`)
       .join('')}`;
 }
 
@@ -1254,6 +1269,7 @@ Promise.all([loadTranslationList(), loadStructure()])
   .then(async ([list, structure]) => {
     translations = list;
     bible = skeletonBible(structure);
+    storyList = await loadStories().catch(() => []);
     audio.initAudio({ store, getBible: () => bible, getAbbr: () => translation().abbr });
     await Promise.all(booksForFirstPage().map((b) => ensureBook(b).catch(() => {})));
     router();

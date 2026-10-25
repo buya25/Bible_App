@@ -17,7 +17,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Timeline:** 250 events and 95 reigns, judges, prophets and periods, grouped into eras from Creation to the early church. It can be filtered to kings, judges or prophets, and explains how the dates were worked out.
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
-- **Bible Stories:** 155 stories in order, from Creation to the new heaven and earth, in 13 sections (Abraham, Joseph, Moses, David, the life of Jesus, parables, the early church…). Each has a one-line introduction and the story's text as flowing paragraphs, in an easy modern translation (BSB) by default with one-tap switching. You can listen to just that story, follow your progress, search, and the Today screen suggests the next story.
+- **Bible Stories:** 155 stories in order, from Creation to the new heaven and earth, in 13 sections (Abraham, Joseph, Moses, David, the life of Jesus, parables, the early church…). Each has a one-line introduction and the story's text as flowing paragraphs, in an easy modern translation (BSB) by default with one-tap switching. Each also has two or three **Talk about it** questions for families, small groups or reflection. You can listen to just that story, follow your progress, search, or follow the **Bible Stories, One a Day** reading plan (finishing a story completes its day). The Today screen suggests the next story.
 - **Audio Bible:** tap ▶ in the reader to listen. It uses the device's voices, preferring natural-sounding male voices, with styles **Natural**, **Calm & slower** and **British narrator**, plus a guide for installing better voices. Reading continues from chapter to chapter and highlights each verse. A mini player stays available while you browse, with a sleep timer, lock-screen controls where supported, and an optional soft background (pad or gentle rain, generated without audio files).
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
 - **Highlights:** five colours, applied to one verse or several at once.
@@ -34,6 +34,8 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Comfort settings:** light, sepia and dark themes (or follow the system), serif or sans font, text size and line spacing.
 - **Simple or Full study mode:** a welcome tour lets people choose. Simple hides the original languages, commentaries, cross references and other study tools; switch any time in Settings. Less-used verse actions sit under **More…**.
 - **Keeping data safe:** the app asks the browser to protect its storage, suggests installing it to the home screen (with iPhone instructions), and reminds people to download a backup once they have notes worth keeping. Settings shows whether storage is protected.
+- **Feedback:** **Send feedback** (Today screen and Settings) lets people report a problem, share an idea or say thanks. It opens a prefilled GitHub issue with optional device details (never notes or prayers), or copies the text to send another way. Set `feedbackEmail` in `js/config.js` to also offer email.
+- **Fast on slow connections:** the first screen loads only the book it needs (about 120–170 KB) while the full translation loads in the background.
 - **Private by design:** your data stays in your browser. Export and import a backup file to move it between devices.
 - **Works offline:** your current translation is cached on the device after the first visit. **Settings → Download everything** caches all translations, the original texts and the dictionary.
 - **Responsive layout:** bottom tabs on phones, wider card layouts on tablets, and top navigation with a comfortable reading width on desktop.
@@ -90,6 +92,8 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/safety.js`, `js/onboarding.js` | Storage protection, install and backup suggestions; welcome tour, More menu, Simple mode |
 | `js/stories.js`, `data/stories.json` | Bible stories: list, story pages, progress |
 | `js/audio.js` | Audio Bible player and voice selection |
+| `js/feedback.js`, `js/config.js` | Feedback form; publisher settings (GitHub repo, optional email) |
+| `data/story-questions.json` | Discussion questions for each story |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |

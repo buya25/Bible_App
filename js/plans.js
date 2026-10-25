@@ -9,13 +9,15 @@ export const PLANS = [
   { id: 'gospels-30', name: 'The Gospels in 30 Days', description: 'Walk through the life of Jesus in Matthew, Mark, Luke and John.', days: 30, books: range(39, 42) },
   { id: 'psalms-proverbs', name: 'Psalms & Proverbs in 2 Months', description: 'Daily wisdom and prayer, about four chapters a day.', days: 60, books: [18, 19] },
   { id: 'ot-year', name: 'Old Testament in a Year', description: 'The full Old Testament at a steady pace.', days: 365, books: range(0, 38) },
+  { id: 'stories', name: 'Bible Stories, One a Day', description: 'The whole Bible story from Creation to the new creation, one story a day, with questions to talk about.', stories: true },
 ];
 
 /**
  * Split chapters into `days` daily readings, balancing by verse count so long
  * chapters (Psalm 119) don't make one day much heavier than the others.
  */
-export function buildSchedule(bible, plan) {
+export function buildSchedule(bible, plan, stories = []) {
+  if (plan.stories) return stories.map((story) => [{ story, book: story.book, chapter: story.chapter }]);
   const chapters = allChapters(bible, plan.books);
   const total = chapters.reduce((s, c) => s + c.weight, 0);
   const days = Array.from({ length: plan.days }, () => []);
@@ -38,6 +40,7 @@ export function buildSchedule(bible, plan) {
 
 /** Summarise a day's readings, e.g. "Genesis 1-3" or "Ruth 4; 1 Samuel 1-2". */
 export function describeDay(readings) {
+  if (readings[0]?.story) return readings.map((r) => `${r.story.title} (${r.story.ref})`).join('; ');
   const groups = [];
   for (const r of readings) {
     const last = groups[groups.length - 1];

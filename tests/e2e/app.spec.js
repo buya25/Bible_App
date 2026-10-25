@@ -43,3 +43,21 @@ test('installable: manifest, PNG icons and service worker', async ({ page, reque
   const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
   expect(scope).toMatch(/localhost:4173\/$/);
 });
+
+test('send feedback opens a prefilled GitHub issue', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.open = (url) => {
+      window.__opened = url;
+      return null;
+    };
+  });
+  await page.goto('./#/today');
+  await page.locator('#today-feedback').click();
+  await page.locator('[data-kind="idea"]').click();
+  await page.locator('#fb-message').fill('Please add Amharic');
+  await page.getByRole('button', { name: 'Send on GitHub' }).click();
+  const url = new URL(await page.evaluate(() => window.__opened));
+  expect(url.pathname).toBe('/buya25/Bible_App/issues/new');
+  expect(url.searchParams.get('title')).toBe('An idea: Please add Amharic');
+  expect(url.searchParams.get('body')).toContain('Page: #/today');
+});

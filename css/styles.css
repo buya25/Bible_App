@@ -442,6 +442,15 @@ main { padding-bottom: 80px; }
 .story-text .sv { border-radius: 4px; }
 .story-text .sv.speaking { background: var(--select); box-shadow: none; }
 .story-text sup { font-family: var(--font-ui); font-size: .6em; color: var(--muted); margin-right: 3px; }
+.today-footer { text-align: center; color: var(--muted); margin: 18px 0 8px; }
+.fb-details { white-space: pre-wrap; font-size: 12px; background: var(--surface-2); padding: 8px; border-radius: 8px; overflow-wrap: anywhere; }
+.fb-actions { margin-top: 8px; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; line-height: 1.45; }
+.check-row input { flex: none; width: 18px; height: 18px; margin-top: 1px; accent-color: var(--accent); }
+.talk { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 18px 10px; margin: 8px 0 16px; }
+.talk h2 { margin-top: 14px; }
+.talk ol { padding-left: 20px; line-height: 1.6; }
+.talk li { margin-bottom: 8px; }
 .story-end { border-top: 1px solid var(--border); padding-top: 12px; }
 .story-nav { max-width: 720px; margin: 18px auto 30px; display: flex; justify-content: space-between; gap: 10px; }
 .story-nav .btn { max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }

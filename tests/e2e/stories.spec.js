@@ -32,3 +32,17 @@ test('today suggests the next story', async ({ page }) => {
   await page.goto('./#/today');
   await expect(page.getByText('Start with Creation')).toBeVisible();
 });
+
+test('story questions and the one-story-a-day plan', async ({ page }) => {
+  await page.goto('./#/stories/goliath');
+  await expect(page.locator('#story-questions h2')).toHaveText('Talk about it');
+  await expect(page.locator('#story-questions li').first()).toContainText('?');
+  await page.goto('./#/plans');
+  await page.locator('[data-start="stories"]').click();
+  await expect(page.locator('.reading-list a').first()).toContainText('Creation');
+  await page.locator('.reading-list a').first().click();
+  await expect(page.locator('.story h1')).toHaveText('Creation');
+  await page.locator('[data-finish]').click(); // finishing the story completes day 1
+  await page.goto('./#/plans');
+  await expect(page.locator('[data-done="0"]')).toBeChecked();
+});
