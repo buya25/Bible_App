@@ -17,14 +17,14 @@ export function parseVerseList(text, bible) {
 }
 
 /** Add or edit a prayer. `seed` can pre-fill verses (from the reader selection). */
-export function openPrayerDialog(dialog, store, bible, { id, seed, onSave } = {}) {
+export function openPrayerDialog(dialog, store, bible, { id, seed, title: seedTitle, details: seedDetails, onSave } = {}) {
   const existing = id ? store.get().prayers.find((p) => p.id === id) : null;
   const verses = existing?.verses || (seed ? [seed] : []);
   dialog.innerHTML = `
     <div class="dialog-head"><h2>${existing ? 'Edit prayer' : 'New prayer'}</h2><button class="btn btn-small" data-close>Cancel</button></div>
     <form class="dialog-body" id="prayer-form">
-      <div class="field"><label for="p-title">Prayer</label><input id="p-title" class="picker-filter" required maxlength="200" value="${escapeHtml(existing?.title || '')}" placeholder="e.g. Healing for Mum, wisdom at work"></div>
-      <div class="field"><label for="p-details">Details (optional)</label><textarea id="p-details" placeholder="Write your prayer…">${escapeHtml(existing?.details || '')}</textarea></div>
+      <div class="field"><label for="p-title">Prayer</label><input id="p-title" class="picker-filter" required maxlength="200" value="${escapeHtml(existing?.title || seedTitle || '')}" placeholder="e.g. Healing for Mum, wisdom at work"></div>
+      <div class="field"><label for="p-details">Details (optional)</label><textarea id="p-details" placeholder="Write your prayer…">${escapeHtml(existing?.details || seedDetails || '')}</textarea></div>
       <div class="field"><label for="p-verses">Verses to pray (optional)</label><input id="p-verses" class="picker-filter" value="${escapeHtml(verses.map(refLabel).join('; '))}" placeholder="e.g. Philippians 4:6-7; Psalm 23"></div>
       <div class="row"><span class="spacer"></span><button class="btn btn-primary" type="submit">Save</button></div>
     </form>`;

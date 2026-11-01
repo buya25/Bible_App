@@ -20,6 +20,7 @@ export const DEFAULTS = {
   lastVisit: null,
   storiesRead: {}, // story id -> timestamp
   storyStars: {}, // story id -> best quiz score (0-3)
+  collectionsRead: {}, // 'collection:n' -> time read
 };
 
 let state = load();

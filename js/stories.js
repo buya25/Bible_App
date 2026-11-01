@@ -48,6 +48,7 @@ async function renderKidsHome(main, store) {
   const stars = store.get().storyStars || {};
   const earned = list.reduce((n, s) => n + (stars[s.id] || 0), 0);
   main.innerHTML = `
+    ${storyTabs('stories')}
     ${modeSwitch(store)}
     <h1>Kids Bible Stories</h1>
     <p class="muted">Short stories with pictures. Read or listen, then answer three questions to earn stars!</p>
@@ -98,6 +99,10 @@ export function toParagraphs(verses) {
 }
 
 export const storyHref = (id) => `#/stories/${id}`;
+/** The Stories | Collections switch shown at the top of both pages. */
+export const storyTabs = (active) => `<nav class="segmented story-tabs" aria-label="Stories or collections">
+    <a href="#/stories" ${active === 'stories' ? 'aria-current="page"' : ''}>Stories</a>
+    <a href="#/stories/collections" ${active === 'collections' ? 'aria-current="page"' : ''}>Collections</a></nav>`;
 const isRead = (store, id) => Boolean(store.get().storiesRead?.[id]);
 export const nextUnread = (stories, store) => stories.find((s) => !isRead(store, s.id)) || null;
 
@@ -112,6 +117,7 @@ export async function renderStoriesHome(main, store) {
   const pct = Math.round((read / stories.length) * 100);
   let n = 0;
   main.innerHTML = `
+    ${storyTabs('stories')}
     ${modeSwitch(store)}
     <h1>Bible Stories</h1>
     <p class="muted">The Bible is one big story told through many stories. Read them in order like a book, from Creation to the new creation. Each one has a short introduction, then the story itself straight from the Bible.</p>

@@ -72,3 +72,40 @@ test('kids stories: pictures, simple text, listening and a quiz with stars', asy
   await page.locator('[data-story-mode="kids"]').click();
   await expect(page.locator('.star-total')).toContainText('2 of 120 stars');
 });
+
+test('collections: commandments, parables and praying a Bible prayer', async ({ page }) => {
+  await page.goto('./#/stories');
+  await page.locator('.story-tabs a', { hasText: 'Collections' }).click();
+  await expect(page.locator('h1')).toHaveText('Collections');
+  await expect(page.locator('.collection-card')).toHaveCount(5);
+  await expectNoHorizontalScroll(page);
+  await page.locator('.collection-card', { hasText: 'Ten Commandments' }).click();
+  await expect(page.locator('.story-row')).toHaveCount(13);
+  await page.locator('.story-row', { hasText: '6. Do Not Murder' }).click();
+  await expect(page.locator('.story h1')).toHaveText('6. Do Not Murder');
+  await page.locator('[data-story-t="kjv"]').click();
+  await expect(page.locator('.story-text')).toContainText('Thou shalt not kill');
+  await expect(page.locator('.related h2')).toHaveText('How Jesus and the apostles taught it');
+  await expect(page.locator('.related-passage')).toContainText('Matthew 5:21-22');
+  await page.locator('[data-finish]').click();
+  await expect(page.locator('.story h1')).toHaveText('7. Be Faithful in Marriage');
+  // Parables: filter and listen to just the passage.
+  await page.goto('./#/stories/collections/parables');
+  await page.locator('#collection-filter').fill('samaritan');
+  await expect(page.locator('.story-list li:not([hidden])')).toHaveCount(1);
+  await page.locator('.story-list li:not([hidden]) a').click();
+  await page.locator('#item-listen').click();
+  await expect(page.locator('#player')).toBeHidden({ timeout: 20_000 });
+  expect(await page.evaluate(() => window.__spoken.length)).toBe(13); // Luke 10:25-37
+  // Prayers: "Pray this" fills the prayer journal.
+  await page.goto('./#/stories/collections/prayers/1');
+  await expect(page.locator('.story h1')).toHaveText("The Lord's Prayer");
+  await page.locator('#item-pray').click();
+  await expect(page.locator('#p-title')).toHaveValue("The Lord's Prayer");
+  await expect(page.locator('#p-verses')).toHaveValue('Matthew 6:9-13');
+  await page.locator('#prayer-form button[type=submit]').click();
+  await page.goto('./#/library/prayers');
+  await expect(page.locator('main')).toContainText("The Lord's Prayer");
+  await page.goto('./#/stories/collections');
+  await expect(page.locator('.collection-card', { hasText: 'Ten Commandments' })).toContainText('1 read');
+});

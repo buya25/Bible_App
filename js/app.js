@@ -16,6 +16,7 @@ import * as audio from './audio.js';
 import { VERSION } from './version.js';
 import { openFeedback } from './feedback.js';
 import { renderStoriesHome, renderStory, storyCardHtml, storyHref, loadStories } from './stories.js';
+import { renderCollections } from './collections.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
 import { openCrossRefsDialog, loadCrossRefs, inlineCrossRefsHtml } from './crossrefs.js';
 import { renderNamePage, searchNames, loadNamesIndex, nameRowHtml } from './names.js';
@@ -411,6 +412,15 @@ function renderStoriesView(parts) {
   const view = document.createElement('div'); // isolated, like Study pages (async rendering)
   main.replaceChildren(view);
   const failed = () => (view.innerHTML = '<div class="empty">Could not load the stories. Check your connection.</div>');
+  if (parts[0] === 'collections') {
+    const pray = (item, p) =>
+      openPrayerDialog(dialog, store, bible, {
+        title: item.title,
+        details: item.explanation,
+        seed: { book: p.book, chapter: p.start.chapter, verses: p.start.chapter === p.end.chapter ? Array.from({ length: p.end.verse - p.start.verse + 1 }, (_, i) => p.start.verse + i) : [] },
+      });
+    return renderCollections(view, parts, { store, translations, loadTranslation, audio, toast, pray }).catch(failed);
+  }
   if (parts[0]) return renderStory(view, parts[0], { store, translations, loadTranslation, audio, toast }).catch(failed);
   return renderStoriesHome(view, store).catch(failed);
 }

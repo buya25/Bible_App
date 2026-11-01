@@ -603,3 +603,15 @@ textarea { width: 100%; min-height: 160px; padding: 12px; border-radius: 12px; b
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+/* Collections */
+.story-tabs { max-width: 320px; margin-bottom: 10px; }
+.story-tabs a { flex: 1; text-align: center; padding: 9px 6px; text-decoration: none; color: var(--text); background: var(--surface); border-left: 1px solid var(--border); }
+.story-tabs a:first-child { border-left: 0; }
+.story-tabs a[aria-current='page'] { background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+.collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
+.collection-card { display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; text-decoration: none; color: var(--text); }
+.collection-card:hover { border-color: var(--accent); }
+.collection-icon { font-size: 30px; line-height: 1.2; }
+.related { margin-top: 20px; }
+.related-passage { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0; }
+.related-passage p { margin: 4px 0 0; }
