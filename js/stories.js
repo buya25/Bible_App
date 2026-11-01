@@ -3,6 +3,7 @@
 import { findBook } from './bible.js';
 import { load } from './data.js';
 import { escapeHtml, readHref } from './util.js';
+import { storyArt, hasArt } from './story-art.js';
 
 export const loadStorySections = () => load('data/stories.json');
 
@@ -20,6 +21,42 @@ export async function loadStories() {
 }
 
 export const loadStoryQuestions = () => load('data/story-questions.json');
+/** Kids versions: { id: { text: [paragraphs], quiz: [{ q, options, answer }] } } */
+export const loadKidsStories = () => load('data/kids-stories.json');
+
+/** Number of correct answers. answers: chosen option index per question. */
+export const quizScore = (quiz, answers) => quiz.reduce((n, q, i) => n + (answers[i] === q.answer ? 1 : 0), 0);
+export const starsText = (n, max = 3) => '★'.repeat(n) + '☆'.repeat(Math.max(0, max - n));
+const isKidsMode = (store) => store.get().settings.storyMode === 'kids';
+const modeSwitch = (store) => `<div class="segmented story-mode" role="group" aria-label="Story style">
+    <button data-story-mode="everyone" aria-pressed="${!isKidsMode(store)}">Everyone</button>
+    <button data-story-mode="kids" aria-pressed="${isKidsMode(store)}">Kids</button></div>`;
+function bindModeSwitch(main, store, rerender) {
+  main.querySelectorAll('[data-story-mode]').forEach((b) => {
+    b.onclick = () => {
+      store.update((s) => (s.settings.storyMode = b.dataset.storyMode));
+      rerender();
+    };
+  });
+}
+
+/* ---------- Kids home: picture grid with stars ---------- */
+
+async function renderKidsHome(main, store) {
+  const [stories, kids] = await Promise.all([loadStories(), loadKidsStories()]);
+  const list = stories.filter((s) => kids[s.id]);
+  const stars = store.get().storyStars || {};
+  const earned = list.reduce((n, s) => n + (stars[s.id] || 0), 0);
+  main.innerHTML = `
+    ${modeSwitch(store)}
+    <h1>Kids Bible Stories</h1>
+    <p class="muted">Short stories with pictures. Read or listen, then answer three questions to earn stars!</p>
+    <section class="card star-total"><span class="big-star" aria-hidden="true">★</span><div><strong>${earned} of ${list.length * 3} stars</strong><br><span class="muted small">${(() => { const full = list.filter((s) => stars[s.id] === 3).length; return `${full} ${full === 1 ? 'story' : 'stories'} with all three stars`; })()}</span></div></section>
+    <div class="kids-grid">${list
+      .map((s) => `<a class="kids-card" href="${storyHref(s.id)}"><div class="kids-art">${storyArt(s.id, s.title)}</div><strong>${escapeHtml(s.title)}</strong><span class="stars" aria-label="${stars[s.id] || 0} of 3 stars">${starsText(stars[s.id] || 0)}</span></a>`)
+      .join('')}</div>`;
+  bindModeSwitch(main, store, () => renderStoriesHome(main, store));
+}
 
 /** "Genesis 1:1-2:3", "1 Samuel 17:1-58" → { book, start: {chapter, verse}, end: {chapter, verse} } or null. */
 export function parsePassage(ref) {
@@ -68,12 +105,14 @@ export const nextUnread = (stories, store) => stories.find((s) => !isRead(store,
 
 export async function renderStoriesHome(main, store) {
   document.title = 'Stories — Bible';
+  if (isKidsMode(store)) return renderKidsHome(main, store);
   const [sections, stories] = await Promise.all([loadStorySections(), loadStories()]);
   const read = stories.filter((s) => isRead(store, s.id)).length;
   const next = nextUnread(stories, store);
   const pct = Math.round((read / stories.length) * 100);
   let n = 0;
   main.innerHTML = `
+    ${modeSwitch(store)}
     <h1>Bible Stories</h1>
     <p class="muted">The Bible is one big story told through many stories. Read them in order like a book, from Creation to the new creation. Each one has a short introduction, then the story itself straight from the Bible.</p>
     <section class="card">
@@ -91,6 +130,7 @@ export async function renderStoriesHome(main, store) {
         })
         .join('')}</ol></section>`)
       .join('')}`;
+  bindModeSwitch(main, store, () => renderStoriesHome(main, store));
   const filter = document.getElementById('story-filter');
   filter.oninput = () => {
     const q = filter.value.trim().toLowerCase();
@@ -114,6 +154,8 @@ export async function renderStory(main, id, ctx) {
     return;
   }
   const passage = parsePassage(story.ref);
+  const kids = (await loadKidsStories().catch(() => ({})))[id];
+  const kidsView = Boolean(kids) && isKidsMode(store);
   const tid = store.get().settings.storyTranslation || 'bsb';
   const t = translations.find((x) => x.id === tid) || translations[0];
   const bible = await ctx.loadTranslation(t.id);
@@ -122,26 +164,30 @@ export async function renderStory(main, id, ctx) {
   const next = stories[story.index + 1];
   const showNumbers = store.get().settings.storyVerseNumbers;
   document.title = `${story.title} — Bible Stories`;
-  const text = toParagraphs(verses.filter((v) => v.text))
+  const bibleText = toParagraphs(verses.filter((v) => v.text))
     .map((p) => `<p>${p.map((v) => `<span class="sv" data-cv="${v.chapter}:${v.verse}">${showNumbers ? `<sup>${v.verse === 1 ? `${v.chapter}:` : ''}${v.verse}</sup>` : ''}${escapeHtml(v.text)}</span>`).join(' ')}</p>`)
     .join('');
+  const text = kidsView ? kids.text.map((p, i) => `<p><span class="sv" data-cv="1:${i + 1}">${escapeHtml(p)}</span></p>`).join('') : bibleText;
   main.innerHTML = `
     <p><a href="#/stories">← All stories</a></p>
     <article class="story">
       <div class="card-label">${escapeHtml(story.section)} · Story ${story.index + 1} of ${stories.length}</div>
       <h1>${escapeHtml(story.title)}</h1>
       <p class="story-ref"><a href="${readHref(passage.book, passage.start.chapter, passage.start.verse)}">${escapeHtml(story.ref)}</a></p>
-      <div class="story-intro">${escapeHtml(story.summary)}</div>
+      ${hasArt(id) ? `<figure class="story-art">${storyArt(id, story.title)}</figure>` : ''}
+      ${kids ? `<div class="segmented story-view" role="group" aria-label="Version"><button data-story-mode="kids" aria-pressed="${kidsView}">Kids version</button><button data-story-mode="everyone" aria-pressed="${!kidsView}">Bible text</button></div>` : ''}
+      ${kidsView ? '<p class="muted small">A simple retelling for children. Tap “Bible text” to read the story straight from the Bible.</p>' : `<div class="story-intro">${escapeHtml(story.summary)}</div>`}
       <div class="story-tools">
         <button class="btn btn-primary" id="story-listen">▶ Listen</button>
-        <div class="segmented story-translation" role="group" aria-label="Translation">${translations
+        ${kidsView ? '' : `<div class="segmented story-translation" role="group" aria-label="Translation">${translations
           .map((x) => `<button data-story-t="${x.id}" aria-pressed="${x.id === t.id}" title="${escapeHtml(x.name)}">${x.abbr}</button>`)
-          .join('')}</div>
+          .join('')}</div>`}
       </div>
-      <div class="story-text passage">${text}</div>
+      <div class="story-text passage${kidsView ? ' kids-text' : ''}">${text}</div>
+      ${kids ? `<section class="quiz" id="story-quiz">${quizHtml(kids.quiz, store.get().storyStars?.[id] || 0)}</section>` : ''}
       <section class="talk" id="story-questions" hidden></section>
       <div class="row story-end">
-        <label class="small"><input type="checkbox" id="story-numbers" ${showNumbers ? 'checked' : ''}> Show verse numbers</label>
+        ${kidsView ? '<span></span>' : `<label class="small"><input type="checkbox" id="story-numbers" ${showNumbers ? 'checked' : ''}> Show verse numbers</label>`}
         <span class="spacer"></span>
         <a class="btn btn-small" href="${readHref(passage.book, passage.start.chapter, passage.start.verse)}">Read in context</a>
       </div>
@@ -184,14 +230,66 @@ export async function renderStory(main, id, ctx) {
       renderStory(main, id, ctx);
     };
   });
-  document.getElementById('story-numbers').onchange = (e) => {
+  bindModeSwitch(main, store, () => renderStory(main, id, ctx));
+  if (kids) bindQuiz(main.querySelector('#story-quiz'), kids.quiz, (score) => {
+    store.update((s) => (s.storyStars = { ...(s.storyStars || {}), [id]: Math.max(score, s.storyStars?.[id] || 0) }));
+    markRead();
+  });
+  const numbers = document.getElementById('story-numbers');
+  if (numbers) numbers.onchange = (e) => {
     store.update((s) => (s.settings.storyVerseNumbers = e.target.checked));
     renderStory(main, id, ctx);
   };
   document.getElementById('story-listen').onclick = () => {
-    const ok = ctx.audio.play(passage.book, passage.start.chapter, passage.start.verse, { until: passage.end, bible, title: story.title });
+    const ok = kidsView
+      ? ctx.audio.play(passage.book, 1, 1, { texts: kids.text, title: story.title })
+      : ctx.audio.play(passage.book, passage.start.chapter, passage.start.verse, { until: passage.end, bible, title: story.title });
     if (!ok) ctx.toast('Listening is not supported in this browser');
   };
+}
+
+/* ---------- Quiz ---------- */
+
+function quizHtml(quiz, best) {
+  return `<h2>Quiz time! <span class="stars small" aria-label="Best: ${best} of 3 stars">${starsText(best)}</span></h2>
+    <p class="muted small">Answer all three to earn stars.</p>
+    ${quiz.map((q, i) => `<fieldset class="quiz-q" data-q="${i}"><legend>${i + 1}. ${escapeHtml(q.q)}</legend>
+      ${q.options.map((o, j) => `<button type="button" class="quiz-option" data-option="${j}">${escapeHtml(o)}</button>`).join('')}
+    </fieldset>`).join('')}
+    <div class="quiz-result" aria-live="polite"></div>`;
+}
+
+/** Tap an answer: it is marked right or wrong, the right one is shown, and the score is reported at the end. */
+function bindQuiz(box, quiz, onDone) {
+  const answers = [];
+  box.addEventListener('click', (e) => {
+    const btn = e.target.closest('.quiz-option');
+    if (btn) {
+      const fs = btn.closest('.quiz-q');
+      const qi = Number(fs.dataset.q);
+      if (answers[qi] !== undefined) return;
+      answers[qi] = Number(btn.dataset.option);
+      fs.querySelectorAll('.quiz-option').forEach((b) => {
+        b.disabled = true;
+        if (Number(b.dataset.option) === quiz[qi].answer) b.classList.add('right');
+      });
+      if (answers[qi] !== quiz[qi].answer) btn.classList.add('wrong');
+      if (answers.filter((a) => a !== undefined).length === quiz.length) {
+        const score = quizScore(quiz, answers);
+        const msg = ['Good try! Read the story again and have another go.', 'Nice start!', 'Great job!', 'Amazing! You got them all!'][score];
+        box.querySelector('.quiz-result').innerHTML = `<p class="result-stars" aria-label="${score} of 3 stars">${starsText(score)}</p><p><strong>${msg}</strong> You got ${score} of ${quiz.length}.</p><button type="button" class="btn btn-small" data-retry>Try again</button>`;
+        onDone(score);
+      }
+    }
+    if (e.target.closest('[data-retry]')) {
+      answers.length = 0;
+      box.querySelectorAll('.quiz-option').forEach((b) => {
+        b.disabled = false;
+        b.classList.remove('right', 'wrong');
+      });
+      box.querySelector('.quiz-result').innerHTML = '';
+    }
+  });
 }
 
 /** Today screen card: the next story to read. */

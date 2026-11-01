@@ -1001,7 +1001,7 @@ const playerEl = document.getElementById('player');
 function renderPlayer(p) {
   playerEl.hidden = p.status === 'stopped';
   if (playerEl.hidden) return;
-  document.getElementById('player-ref').textContent = p.title ? `${p.title} · ${p.chapter}:${p.verse}` : `${BOOKS[p.book].name} ${p.chapter}:${p.verse}`;
+  document.getElementById('player-ref').textContent = p.texts ? `${p.title} · part ${p.verse} of ${p.texts.length}` : p.title ? `${p.title} · ${p.chapter}:${p.verse}` : `${BOOKS[p.book].name} ${p.chapter}:${p.verse}`;
   const sleep = p.sleep === 'chapter' ? 'Stops at end of chapter' : p.sleepEnds ? `Sleep in ${Math.max(1, Math.round((p.sleepEnds - Date.now()) / 60000))} min` : `${translation().abbr} · ${audio.pickVoice(store.get().settings)?.name?.replace(/^Microsoft |\s*\(.*\)$/g, '') || 'device voice'}`;
   document.getElementById('player-sub').textContent = sleep;
   playerEl.querySelector('[data-p="toggle"]').innerHTML = p.status === 'playing' ? ICONS.pause : ICONS.play;

@@ -1,0 +1,1594 @@
+{
+ "creation": {
+  "text": [
+   "In the very beginning, there was nothing at all, only God.",
+   "Then God spoke, and things began to happen! \"Let there be light,\" He said, and there was light. God made day and night.",
+   "God made the big blue sky, the dry land and the deep seas. He filled the land with trees, flowers and fruit of every kind.",
+   "God put the sun in the sky to shine by day, and the moon and stars to shine at night.",
+   "He filled the seas with fish and whales, and the sky with birds. He made animals of every shape and size: lions, sheep, elephants and tiny bugs.",
+   "Last of all, God made people: a man and a woman. He made them like Himself, so they could know Him and love Him and take care of His world.",
+   "God looked at everything He had made, and it was very good! On the seventh day God rested and blessed that day."
+  ],
+  "quiz": [
+   {
+    "q": "What did God make first?",
+    "options": [
+     "Light",
+     "Animals",
+     "People"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How did God make the world?",
+    "options": [
+     "He built it with tools",
+     "He spoke, and it happened",
+     "It made itself"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did God do on the seventh day?",
+    "options": [
+     "He made the sea",
+     "He made people",
+     "He rested"
+    ],
+    "answer": 2
+   }
+  ]
+ },
+ "fall": {
+  "text": [
+   "Adam and Eve lived in a beautiful garden called Eden. God gave them everything they needed.",
+   "There was just one rule: \"Don't eat the fruit from the tree of the knowledge of good and evil.\"",
+   "One day a sneaky serpent said to Eve, \"Did God really say that? You won't die if you eat it!\"",
+   "Eve looked at the fruit. It looked so good. She took a bite and gave some to Adam, and he ate it too.",
+   "Suddenly they felt ashamed, and they hid from God among the trees.",
+   "God called, \"Where are you?\" Because they had disobeyed, they had to leave the garden.",
+   "But God still loved them. He made them clothes, and He promised that one day Someone would come to defeat evil for good."
+  ],
+  "quiz": [
+   {
+    "q": "What was the one rule in the garden?",
+    "options": [
+     "Don't climb the trees",
+     "Don't eat from one special tree",
+     "Don't talk to animals"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who tricked Eve?",
+    "options": [
+     "A serpent",
+     "A lion",
+     "Adam"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Adam and Eve do after they disobeyed?",
+    "options": [
+     "They sang a song",
+     "They hid from God",
+     "They planted a tree"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "noah": {
+  "text": [
+   "Long ago, people became very wicked and did terrible things. But one man, Noah, loved God and did what was right.",
+   "God told Noah, \"Build a huge boat called an ark, because a great flood is coming.\"",
+   "Noah obeyed. He built the ark just the way God said, even though there was no rain yet.",
+   "Then the animals came, two by two: lions and lambs, giraffes and goats, birds and bears! Noah and his family went inside, and God shut the door.",
+   "It rained for forty days and forty nights. Water covered everything, but the ark floated safely on top.",
+   "At last the rain stopped. Noah sent out a dove, and it came back with an olive leaf. The land was drying!",
+   "When everyone came out, God put a beautiful rainbow in the sky. It was His promise never again to flood the whole earth."
+  ],
+  "quiz": [
+   {
+    "q": "What did God ask Noah to build?",
+    "options": [
+     "A house",
+     "A tower",
+     "An ark"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "How did the animals come into the ark?",
+    "options": [
+     "Two by two",
+     "One at a time",
+     "All at once"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did God put in the sky as a promise?",
+    "options": [
+     "A star",
+     "A rainbow",
+     "A cloud"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "babel": {
+  "text": [
+   "After the flood, everyone in the world spoke the same language.",
+   "Some people said, \"Let's build a city with a tower that reaches up to the sky. Then we'll be famous!\"",
+   "They made bricks and began to build higher and higher. They were proud and wanted glory for themselves, not for God.",
+   "God saw the tower. He knew their pride would only lead to more trouble.",
+   "So God mixed up their language. Suddenly nobody could understand anyone else! \"Pass me a brick\" sounded like nonsense.",
+   "The building stopped, and the people spread out all over the world. The city was called Babel, which sounds like the word for \"mixed up.\""
+  ],
+  "quiz": [
+   {
+    "q": "Why did the people build the tower?",
+    "options": [
+     "To make themselves famous",
+     "To see the stars",
+     "To hide from a flood"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did God do to stop them?",
+    "options": [
+     "He sent rain",
+     "He mixed up their language",
+     "He knocked down the tower"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What was the city called?",
+    "options": [
+     "Babel",
+     "Bethlehem",
+     "Eden"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "covenant-stars": {
+  "text": [
+   "Abram was old, and he and his wife Sarai had no children. It made them very sad.",
+   "One night God spoke to Abram: \"Don't be afraid. I am your shield.\"",
+   "Abram said, \"But Lord, I don't have any children.\"",
+   "God took Abram outside. \"Look up at the sky and count the stars, if you can!\"",
+   "Abram looked up. There were thousands and thousands of stars, far too many to count.",
+   "\"That's how many children and grandchildren your family will have,\" God promised.",
+   "Abram believed God. And God was pleased with Abram because he trusted Him."
+  ],
+  "quiz": [
+   {
+    "q": "What did God ask Abram to count?",
+    "options": [
+     "Sheep",
+     "Stars",
+     "Sand"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did God promise Abram?",
+    "options": [
+     "A big house",
+     "A huge family",
+     "A crown"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Abram do?",
+    "options": [
+     "He laughed",
+     "He believed God",
+     "He ran away"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "jacobs-ladder": {
+  "text": [
+   "Jacob had tricked his brother Esau, and Esau was very angry. So Jacob ran away from home.",
+   "When night came, Jacob was all alone in the wilderness. He used a stone for a pillow and fell asleep.",
+   "Jacob had an amazing dream. He saw a stairway reaching from the ground all the way up to heaven, with angels going up and down on it!",
+   "At the top stood the Lord. God said, \"I am with you, and I will watch over you wherever you go. I will bring you back home.\"",
+   "Jacob woke up and said, \"God is here, and I didn't even know it!\"",
+   "He called the place Bethel, which means \"house of God,\" and he promised to follow God."
+  ],
+  "quiz": [
+   {
+    "q": "What did Jacob use for a pillow?",
+    "options": [
+     "A stone",
+     "A sheep",
+     "His coat"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Jacob see in his dream?",
+    "options": [
+     "A big boat",
+     "A stairway to heaven",
+     "A burning bush"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did God promise Jacob?",
+    "options": [
+     "\"I will be with you\"",
+     "\"You will be king\"",
+     "\"You will be rich tomorrow\""
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "joseph-sold": {
+  "text": [
+   "Jacob had twelve sons, but Joseph was his favourite. Jacob gave Joseph a special, beautiful coat.",
+   "Joseph's brothers were jealous. They became even angrier when Joseph told them his dreams, dreams where they all bowed down to him!",
+   "One day Joseph went to visit his brothers in the fields. When they saw him coming, they said, \"Here comes the dreamer! Let's get rid of him.\"",
+   "They took his coat and threw him into an empty well.",
+   "Then some traders came by on camels, and the brothers sold Joseph to them as a slave. He was taken far away to Egypt.",
+   "The brothers dipped Joseph's coat in goat's blood and showed it to their father. Jacob thought Joseph had been killed by a wild animal and he cried and cried.",
+   "But God had not forgotten Joseph. God was with him, even in Egypt."
+  ],
+  "quiz": [
+   {
+    "q": "What special gift did Jacob give Joseph?",
+    "options": [
+     "A coat",
+     "A camel",
+     "A crown"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Why were Joseph's brothers angry?",
+    "options": [
+     "He broke their toys",
+     "They were jealous",
+     "He was lazy"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Where was Joseph taken?",
+    "options": [
+     "Egypt",
+     "Babylon",
+     "Rome"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "joseph-revealed": {
+  "text": [
+   "Many years later, Joseph had become the most important ruler in Egypt after Pharaoh. God had helped him store food before a terrible famine.",
+   "Joseph's brothers came to Egypt to buy food. They bowed down to him, but they didn't recognise him!",
+   "Joseph tested them to see if they had changed. They had: now they were willing to protect their youngest brother.",
+   "Joseph couldn't hold back his tears. \"I am Joseph, your brother!\" he cried.",
+   "The brothers were terrified. But Joseph said, \"Don't be afraid. You meant to hurt me, but God meant it for good, to save many lives.\"",
+   "Joseph hugged his brothers and forgave them. The whole family, with their father Jacob, came to live safely in Egypt."
+  ],
+  "quiz": [
+   {
+    "q": "Why did the brothers come to Egypt?",
+    "options": [
+     "To buy food",
+     "To find Joseph",
+     "To see the pyramids"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Joseph do when he told them who he was?",
+    "options": [
+     "He punished them",
+     "He forgave them",
+     "He sent them away"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Joseph said God turned the bad things into...",
+    "options": [
+     "Gold",
+     "Good",
+     "Gifts"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "baby-moses": {
+  "text": [
+   "God's people, the Israelites, were slaves in Egypt. The cruel king, Pharaoh, ordered that all their baby boys be thrown into the river.",
+   "One brave mother hid her baby boy for three months. When he grew too big to hide, she made a basket, covered it with tar so it would float, and laid him inside.",
+   "She set the basket among the reeds by the river Nile. The baby's big sister, Miriam, watched from nearby.",
+   "Pharaoh's daughter came to the river to bathe. She saw the basket, opened it, and the baby was crying. She felt sorry for him.",
+   "Miriam ran up and asked, \"Shall I find a woman to feed the baby for you?\" And she fetched the baby's own mother!",
+   "The princess adopted the boy and named him Moses. God was keeping him safe for a very special job."
+  ],
+  "quiz": [
+   {
+    "q": "Where did Moses' mother put the basket?",
+    "options": [
+     "In the river Nile",
+     "On a mountain",
+     "In the desert"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who watched over the basket?",
+    "options": [
+     "His brother",
+     "His sister Miriam",
+     "A soldier"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who found baby Moses?",
+    "options": [
+     "Pharaoh's daughter",
+     "A fisherman",
+     "A shepherd"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "burning-bush": {
+  "text": [
+   "Moses grew up and became a shepherd in the desert. One day, while he looked after his sheep near a mountain, he saw something amazing.",
+   "A bush was on fire, but it didn't burn up!",
+   "As Moses came closer, God called to him from the bush: \"Moses! Take off your sandals. This is holy ground.\"",
+   "God said, \"I have seen how my people are suffering in Egypt. I am sending you to bring them out.\"",
+   "Moses was scared. \"Who am I to go?\" he asked. \"I'm not a good speaker.\"",
+   "God answered, \"I will be with you.\" He even let Moses' brother Aaron help him.",
+   "So Moses went back to Egypt, trusting that God would keep His promise."
+  ],
+  "quiz": [
+   {
+    "q": "What was strange about the bush?",
+    "options": [
+     "It was blue",
+     "It burned but didn't burn up",
+     "It could walk"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did God tell Moses to take off?",
+    "options": [
+     "His hat",
+     "His coat",
+     "His sandals"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "Who did God send to help Moses?",
+    "options": [
+     "His brother Aaron",
+     "Pharaoh",
+     "Joseph"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "red-sea": {
+  "text": [
+   "At last Pharaoh let God's people go! They left Egypt, and God led them with a tall cloud by day and a pillar of fire by night.",
+   "But then Pharaoh changed his mind. He chased them with his whole army and hundreds of chariots.",
+   "The Israelites were trapped with the sea in front of them and the army behind them. They were terrified!",
+   "Moses said, \"Don't be afraid. Stand still and watch how the Lord will save you.\"",
+   "Moses stretched out his hand over the sea. God sent a strong wind all night, and the water split in two, with a dry path right through the middle!",
+   "God's people walked through the sea on dry ground, with walls of water on each side.",
+   "When the Egyptians followed, the water came crashing back. God's people were safe, and they sang and danced to praise Him."
+  ],
+  "quiz": [
+   {
+    "q": "Who chased the Israelites?",
+    "options": [
+     "Pharaoh's army",
+     "Wild animals",
+     "A giant"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What happened to the sea?",
+    "options": [
+     "It froze",
+     "It split in two",
+     "It dried up forever"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the people do when they were safe?",
+    "options": [
+     "They went back to Egypt",
+     "They sang and praised God",
+     "They slept"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "manna": {
+  "text": [
+   "God's people walked through the hot, empty desert. Soon they were hungry, and they started to grumble.",
+   "God heard them. He said, \"I will rain down bread from heaven for you.\"",
+   "The next morning, the ground was covered with thin white flakes. \"What is it?\" the people asked. They called it manna. It tasted like wafers made with honey!",
+   "Every morning they gathered just enough for that day. If anyone kept extra, it went bad and was full of worms!",
+   "But on the sixth day they gathered twice as much, so they could rest on the seventh day.",
+   "In the evening God also sent quail, birds for meat. Every single day in the desert, God gave them what they needed."
+  ],
+  "quiz": [
+   {
+    "q": "What did the people call the bread from heaven?",
+    "options": [
+     "Manna",
+     "Pizza",
+     "Pita"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did manna taste like?",
+    "options": [
+     "Salt",
+     "Wafers made with honey",
+     "Fish"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What happened if people kept extra manna?",
+    "options": [
+     "It turned to gold",
+     "It went bad",
+     "It grew bigger"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "ten-commandments": {
+  "text": [
+   "God led His people to a mountain called Sinai. There was thunder and lightning, a thick cloud, and a very loud trumpet sound! The mountain shook.",
+   "God called Moses to come up the mountain. There God gave His people ten important rules, the Ten Commandments.",
+   "Love God first: have no other gods, don't make idols, honour God's name, and keep a day of rest.",
+   "Love other people: honour your father and mother; don't murder, don't be unfaithful in marriage, don't steal, don't lie, and don't want what belongs to someone else.",
+   "God wrote His commandments on two flat stone tablets.",
+   "These rules showed God's people how to love Him and love one another."
+  ],
+  "quiz": [
+   {
+    "q": "On which mountain did God give the commandments?",
+    "options": [
+     "Mount Sinai",
+     "Mount Everest",
+     "Mount Zion"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What were the commandments written on?",
+    "options": [
+     "Paper",
+     "Stone tablets",
+     "Wood"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "The commandments teach us to love God and...",
+    "options": [
+     "Love money",
+     "Love other people",
+     "Love ourselves only"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "jericho": {
+  "text": [
+   "After Moses died, Joshua led God's people into the land God had promised them.",
+   "But first there was the city of Jericho, with huge, strong walls and gates shut tight.",
+   "God gave Joshua a very strange plan: \"March around the city once a day for six days. The priests will carry the ark and blow trumpets.\"",
+   "On the seventh day, they marched around seven times. Then the priests blew a long blast on the trumpets.",
+   "Joshua said, \"Shout! The Lord has given you the city!\"",
+   "The people shouted as loud as they could, and the great walls came tumbling down flat!",
+   "God's people had trusted His plan, even though it seemed strange, and God gave them the victory."
+  ],
+  "quiz": [
+   {
+    "q": "Who led God's people at Jericho?",
+    "options": [
+     "Moses",
+     "Joshua",
+     "David"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "How many times did they march around on the seventh day?",
+    "options": [
+     "Once",
+     "Three times",
+     "Seven times"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What happened when they shouted?",
+    "options": [
+     "The walls fell down",
+     "It started to rain",
+     "The gate opened"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "gideon": {
+  "text": [
+   "The Midianites kept raiding Israel and stealing all their food. Gideon was hiding while he threshed wheat when an angel appeared.",
+   "\"The Lord is with you, mighty warrior!\" said the angel. Gideon didn't feel mighty at all, but God chose him to save Israel.",
+   "Gideon gathered 32,000 soldiers. But God said, \"That's too many! People will think they won by themselves.\"",
+   "So God made the army smaller and smaller, until only 300 men were left.",
+   "God gave Gideon a surprising plan. In the middle of the night, each man held a trumpet and a torch hidden inside a jar.",
+   "At Gideon's signal, they blew their trumpets, smashed their jars, held up their torches and shouted, \"For the Lord and for Gideon!\"",
+   "The enemy army panicked and ran away. God won the battle with just 300 men!"
+  ],
+  "quiz": [
+   {
+    "q": "How many soldiers were left in Gideon's army?",
+    "options": [
+     "32,000",
+     "3,000",
+     "300"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What did they hide inside their jars?",
+    "options": [
+     "Torches",
+     "Bread",
+     "Swords"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Why did God make the army small?",
+    "options": [
+     "To show that God won the battle",
+     "Because there wasn't enough food",
+     "Because the men were sick"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "ruth-naomi": {
+  "text": [
+   "Naomi lived in the land of Moab with her husband and two sons. Her sons married two women from Moab, Ruth and Orpah.",
+   "Then something very sad happened: Naomi's husband and both her sons died.",
+   "Naomi decided to go home to Bethlehem. She told Ruth and Orpah, \"Go back to your own families.\"",
+   "Orpah kissed Naomi goodbye. But Ruth hugged her tight and would not let go.",
+   "Ruth said, \"Where you go, I will go. Your people will be my people, and your God will be my God.\"",
+   "So Ruth and Naomi walked all the way to Bethlehem together. Ruth's loving loyalty was the start of a wonderful story that God was writing."
+  ],
+  "quiz": [
+   {
+    "q": "Where was Naomi going home to?",
+    "options": [
+     "Egypt",
+     "Bethlehem",
+     "Jericho"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who stayed with Naomi?",
+    "options": [
+     "Ruth",
+     "Orpah",
+     "Nobody"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Ruth said, \"Your God will be...\"",
+    "options": [
+     "\"...far away\"",
+     "\"...my God\"",
+     "\"...angry\""
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "samuel-called": {
+  "text": [
+   "Young Samuel lived in God's house and helped the old priest Eli.",
+   "One night, as Samuel was lying down, he heard someone call, \"Samuel!\"",
+   "He ran to Eli. \"Here I am! You called me.\" But Eli said, \"I didn't call you. Go back to bed.\"",
+   "It happened again, and again! Three times Samuel ran to Eli.",
+   "Then Eli understood: it was God calling Samuel! He said, \"If He calls again, say: Speak, Lord, for your servant is listening.\"",
+   "God called again, \"Samuel! Samuel!\" And Samuel answered, \"Speak, for your servant is listening.\"",
+   "God spoke to Samuel, and as Samuel grew up, God was with him. Everyone knew Samuel was God's prophet."
+  ],
+  "quiz": [
+   {
+    "q": "Who did Samuel think was calling him?",
+    "options": [
+     "His mum",
+     "Eli",
+     "A soldier"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "How many times did Samuel run to Eli?",
+    "options": [
+     "Once",
+     "Three times",
+     "Ten times"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Samuel say to God?",
+    "options": [
+     "\"Speak, for your servant is listening\"",
+     "\"Please be quiet\"",
+     "\"Come back tomorrow\""
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "goliath": {
+  "text": [
+   "The Philistine army had a giant soldier named Goliath. He was about nine feet (almost three metres) tall, with heavy bronze armour and a huge spear.",
+   "Every day Goliath shouted, \"Send someone to fight me!\" All of Israel's soldiers were afraid.",
+   "David, a young shepherd boy, brought food to his brothers in the army. He heard Goliath's insults against God.",
+   "\"I'll fight him!\" said David. \"God saved me from a lion and a bear. He will save me from this giant too.\"",
+   "David didn't wear armour. He took his sling and chose five smooth stones from a stream.",
+   "Goliath laughed at him. But David said, \"You come with a sword and spear, but I come in the name of the Lord!\"",
+   "David swung his sling, and the stone hit Goliath right on the forehead. The giant fell down flat! God had won the battle."
+  ],
+  "quiz": [
+   {
+    "q": "What was David's job?",
+    "options": [
+     "Shepherd",
+     "Fisherman",
+     "Soldier"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How many stones did David pick up?",
+    "options": [
+     "One",
+     "Five",
+     "Twelve"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who did David trust to help him?",
+    "options": [
+     "King Saul",
+     "His brothers",
+     "God"
+    ],
+    "answer": 2
+   }
+  ]
+ },
+ "solomon-wisdom": {
+  "text": [
+   "Solomon became king of Israel when he was still young. One night God appeared to him in a dream and said, \"Ask for whatever you want.\"",
+   "Solomon could have asked for riches or a long life. Instead he said, \"Please give me wisdom, so I can lead your people well.\"",
+   "God was pleased. \"I will give you wisdom, and also riches and honour,\" He said.",
+   "Soon two women came to King Solomon with one baby. Each said, \"The baby is mine!\"",
+   "Solomon said, \"Bring me a sword. Cut the baby in two and give each woman half.\"",
+   "The real mother cried out, \"No! Give her the baby, just don't hurt him!\" The other woman didn't care.",
+   "Solomon said, \"Give the baby to the first woman. She is his mother.\" Everyone saw that God had given Solomon wisdom."
+  ],
+  "quiz": [
+   {
+    "q": "What did Solomon ask God for?",
+    "options": [
+     "Riches",
+     "Wisdom",
+     "A big army"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What were the two women arguing about?",
+    "options": [
+     "A baby",
+     "A house",
+     "A sheep"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How did Solomon know who the real mother was?",
+    "options": [
+     "She loved the baby most",
+     "She was taller",
+     "She shouted loudest"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "elijah-ravens": {
+  "text": [
+   "God sent the prophet Elijah to tell wicked King Ahab, \"There will be no rain until I say so.\"",
+   "Then God told Elijah to hide by a little stream. Every morning and evening, ravens flew in carrying bread and meat for him!",
+   "When the stream dried up, God sent Elijah to a town where a poor widow lived with her son.",
+   "She had only a handful of flour and a little oil, just enough for one last meal.",
+   "Elijah said, \"Don't be afraid. Make me a little bread first. God says your flour and oil will not run out.\"",
+   "She trusted God and did it. And every day, there was still flour in the jar and oil in the jug!",
+   "God took care of Elijah, the widow and her son all the way through the long dry time."
+  ],
+  "quiz": [
+   {
+    "q": "Which birds brought Elijah food?",
+    "options": [
+     "Doves",
+     "Ravens",
+     "Eagles"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the widow have left?",
+    "options": [
+     "A little flour and oil",
+     "Lots of bread",
+     "Some fish"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What happened to her flour and oil?",
+    "options": [
+     "It ran out",
+     "It never ran out",
+     "It turned into gold"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "mount-carmel": {
+  "text": [
+   "Many people in Israel had started praying to a false god called Baal. Elijah wanted them to see who the true God is.",
+   "He said to Baal's prophets, \"Let's have a contest on Mount Carmel. We'll each build an altar. The God who answers with fire is the real God!\"",
+   "Baal's prophets shouted and danced from morning until afternoon: \"Baal, answer us!\" But nothing happened.",
+   "Then Elijah built an altar to the Lord. He even poured water all over it, three times, until it was soaking wet!",
+   "Elijah prayed a simple prayer: \"Lord, show them that You are God.\"",
+   "Fire fell from heaven! It burned up the offering, the wood, the stones and even the water!",
+   "All the people fell on their faces and cried, \"The Lord, He is God!\""
+  ],
+  "quiz": [
+   {
+    "q": "What was the contest about?",
+    "options": [
+     "Who could run fastest",
+     "Which god would answer with fire",
+     "Who could build the tallest altar"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Elijah pour on his altar?",
+    "options": [
+     "Oil",
+     "Water",
+     "Sand"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the people shout at the end?",
+    "options": [
+     "\"The Lord, He is God!\"",
+     "\"Baal is great!\"",
+     "\"Let's go home!\""
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "naaman": {
+  "text": [
+   "Naaman was a great army commander from Syria, but he had a terrible skin disease called leprosy.",
+   "A young girl from Israel worked as a servant in his house. She said, \"I wish he could see God's prophet in Israel. He would heal him!\"",
+   "So Naaman travelled to see the prophet Elisha. But Elisha didn't even come out. He sent a message: \"Go and wash seven times in the Jordan River.\"",
+   "Naaman was angry! \"Our rivers at home are better than this muddy river!\" He started to leave.",
+   "His servants said, \"If he'd asked you to do something hard, you would have done it. Why not just wash?\"",
+   "So Naaman dipped himself in the Jordan, one, two, three, four, five, six, seven times. When he came up the seventh time, his skin was healed, smooth like a little child's!",
+   "Naaman said, \"Now I know there is no God in all the world except in Israel.\""
+  ],
+  "quiz": [
+   {
+    "q": "Who told Naaman about the prophet?",
+    "options": [
+     "A young servant girl",
+     "The king",
+     "A soldier"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How many times did Naaman wash in the river?",
+    "options": [
+     "Three",
+     "Seven",
+     "Ten"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Why did Naaman almost refuse?",
+    "options": [
+     "He was too proud",
+     "He couldn't swim",
+     "The river was frozen"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "fiery-furnace": {
+  "text": [
+   "King Nebuchadnezzar of Babylon made a giant golden statue. He ordered, \"When the music plays, everyone must bow down and worship it!\"",
+   "Three young men, Shadrach, Meshach and Abednego, loved God. They would not bow down to a statue.",
+   "The king was furious. \"Bow down, or you'll be thrown into a blazing furnace!\"",
+   "They answered, \"Our God is able to save us. But even if He doesn't, we will never worship your statue.\"",
+   "The king made the furnace seven times hotter, and the three friends were tied up and thrown in.",
+   "Then the king jumped up in amazement. \"Didn't we throw in three men? I see four men walking around in the fire, and the fourth looks like a son of the gods!\"",
+   "The three friends came out without a single burn, and they didn't even smell of smoke! The king praised their God."
+  ],
+  "quiz": [
+   {
+    "q": "What did the king want everyone to bow down to?",
+    "options": [
+     "A golden statue",
+     "The king himself",
+     "A tree"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How many men did the king see in the fire?",
+    "options": [
+     "Two",
+     "Three",
+     "Four"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What happened to the three friends?",
+    "options": [
+     "They were badly burned",
+     "They weren't burned at all",
+     "They ran away"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "lions-den": {
+  "text": [
+   "Daniel was an important leader for King Darius, and the king liked him very much. Some other leaders were jealous.",
+   "They knew Daniel prayed to God three times every day. So they tricked the king into making a law: \"For thirty days, anyone who prays to anyone except the king will be thrown to the lions!\"",
+   "Daniel heard about the law. But he went home, opened his window, and prayed to God just as he always did.",
+   "The jealous men caught him. The king was very sad, but he had to keep his own law. Daniel was thrown into a den of hungry lions.",
+   "The king couldn't sleep all night. Early in the morning he hurried to the den and called, \"Daniel! Has your God saved you?\"",
+   "\"Yes, King!\" said Daniel. \"My God sent His angel and shut the lions' mouths!\"",
+   "The king was overjoyed. He told everyone in his kingdom to honour Daniel's God, the living God."
+  ],
+  "quiz": [
+   {
+    "q": "How often did Daniel pray?",
+    "options": [
+     "Once a week",
+     "Three times a day",
+     "Only on Sundays"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Where was Daniel thrown?",
+    "options": [
+     "Into a lions' den",
+     "Into a river",
+     "Into a furnace"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who shut the lions' mouths?",
+    "options": [
+     "The king",
+     "God's angel",
+     "Daniel"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "jonah": {
+  "text": [
+   "God told Jonah, \"Go to the big city of Nineveh and tell the people to stop doing evil.\"",
+   "But Jonah didn't want to go. He got on a ship going the opposite way!",
+   "God sent a huge storm. The sailors were terrified. Jonah said, \"It's my fault. Throw me into the sea, and it will become calm.\"",
+   "So they threw him overboard, and the sea became calm. Then God sent a giant fish to swallow Jonah!",
+   "Jonah was inside the fish for three days and three nights. He prayed and said sorry to God.",
+   "God made the fish spit Jonah out onto dry land. This time Jonah went to Nineveh.",
+   "The people of Nineveh listened. They were sorry for their sins, and God forgave them. God loves everyone, even people we don't expect."
+  ],
+  "quiz": [
+   {
+    "q": "Where did God want Jonah to go?",
+    "options": [
+     "Nineveh",
+     "Egypt",
+     "Bethlehem"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What swallowed Jonah?",
+    "options": [
+     "A giant fish",
+     "A lion",
+     "A crocodile"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did the people of Nineveh do?",
+    "options": [
+     "They laughed at Jonah",
+     "They said sorry to God",
+     "They chased Jonah away"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "such-a-time": {
+  "text": [
+   "Esther was a Jewish girl who became queen of Persia. But the king didn't know she was Jewish.",
+   "An evil man named Haman made a plan to destroy all the Jewish people.",
+   "Esther's cousin Mordecai told her, \"You must go to the king and beg him to save your people!\"",
+   "But there was a rule: anyone who went to the king without being called could be put to death.",
+   "Mordecai said, \"Who knows? Maybe you became queen for such a time as this.\"",
+   "Esther was brave. She asked everyone to pray and fast for three days. Then she said, \"I will go to the king, even if I die.\"",
+   "The king held out his golden sceptre to welcome her. Esther told him about Haman's plan, and her people were saved!"
+  ],
+  "quiz": [
+   {
+    "q": "Who was Esther?",
+    "options": [
+     "A queen",
+     "A shepherd",
+     "A soldier"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who wanted to destroy the Jewish people?",
+    "options": [
+     "Mordecai",
+     "Haman",
+     "The king"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Esther ask everyone to do before she went to the king?",
+    "options": [
+     "Pray and fast",
+     "Have a party",
+     "Run away"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "nativity": {
+  "text": [
+   "Mary and Joseph had to travel a long way to the town of Bethlehem.",
+   "When they arrived, there was no room for them in the guest room. That night Mary's baby was born, God's own Son, Jesus!",
+   "Mary wrapped Him in cloths and laid Him in a manger, a feeding box for animals.",
+   "Out in the fields, shepherds were watching their sheep. Suddenly an angel appeared, and God's glory shone all around!",
+   "\"Don't be afraid,\" said the angel. \"I bring you good news of great joy for all people. Today a Saviour has been born!\"",
+   "Then lots of angels filled the sky, praising God: \"Glory to God in the highest, and peace on earth!\"",
+   "The shepherds hurried to Bethlehem and found baby Jesus lying in the manger. Then they told everyone what they had seen!"
+  ],
+  "quiz": [
+   {
+    "q": "In which town was Jesus born?",
+    "options": [
+     "Nazareth",
+     "Bethlehem",
+     "Jerusalem"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Where did Mary lay baby Jesus?",
+    "options": [
+     "In a manger",
+     "In a palace bed",
+     "In a boat"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who did the angels visit first?",
+    "options": [
+     "Kings",
+     "Shepherds",
+     "Fishermen"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "wise-men": {
+  "text": [
+   "After Jesus was born, wise men from the east saw a special star in the sky.",
+   "They travelled a long way to Jerusalem and asked, \"Where is the newborn King of the Jews? We have come to worship Him.\"",
+   "King Herod was worried. He wanted to be the only king! He told the wise men, \"Go and find Him, then tell me where He is.\"",
+   "The star went ahead of the wise men and stopped right over the house where Jesus was.",
+   "They were filled with joy! They went in, saw Jesus with His mother Mary, and bowed down to worship Him.",
+   "They gave Him treasures: gold, frankincense and myrrh.",
+   "God warned them in a dream not to go back to Herod, so they went home another way."
+  ],
+  "quiz": [
+   {
+    "q": "What did the wise men follow?",
+    "options": [
+     "A star",
+     "A river",
+     "A map"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Which gifts did they bring?",
+    "options": [
+     "Toys and clothes",
+     "Gold, frankincense and myrrh",
+     "Bread and fish"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Why didn't they go back to King Herod?",
+    "options": [
+     "God warned them in a dream",
+     "They got lost",
+     "They forgot"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "boy-jesus": {
+  "text": [
+   "When Jesus was twelve years old, He went with Mary and Joseph to Jerusalem for the Passover festival.",
+   "After the festival, Mary and Joseph started walking home with a big group of friends and family. They thought Jesus was somewhere in the crowd.",
+   "But after a whole day, they couldn't find Him! They hurried back to Jerusalem to look for Him.",
+   "After three days, they found Jesus in the temple, sitting with the teachers, listening and asking questions.",
+   "Everyone was amazed at how much He understood!",
+   "Mary said, \"Son, we've been so worried!\" Jesus answered, \"Didn't you know I had to be in my Father's house?\"",
+   "Then Jesus went home and obeyed His parents. He grew taller and wiser, loved by God and by people."
+  ],
+  "quiz": [
+   {
+    "q": "How old was Jesus in this story?",
+    "options": [
+     "Five",
+     "Twelve",
+     "Thirty"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Where did Mary and Joseph find Jesus?",
+    "options": [
+     "In the temple",
+     "In the market",
+     "At a friend's house"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Jesus called the temple...",
+    "options": [
+     "\"My school\"",
+     "\"My Father's house\"",
+     "\"A big building\""
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "fishermen": {
+  "text": [
+   "Peter and his friends were fishermen. One night they fished and fished, but they caught nothing at all.",
+   "In the morning, Jesus got into Peter's boat and taught the crowds on the shore.",
+   "Then Jesus said, \"Go out into deep water and let down your nets.\"",
+   "Peter said, \"Master, we worked all night and caught nothing. But because you say so, I will.\"",
+   "They let down the nets, and suddenly they were full of fish, so many that the nets started to break! They filled two boats until they almost sank.",
+   "Peter fell at Jesus' knees, amazed. Jesus said, \"Don't be afraid. From now on you will fish for people.\"",
+   "Peter, James and John pulled their boats onto the shore, left everything, and followed Jesus."
+  ],
+  "quiz": [
+   {
+    "q": "How many fish had Peter caught that night?",
+    "options": [
+     "None",
+     "Ten",
+     "Hundreds"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What happened when they obeyed Jesus?",
+    "options": [
+     "The boat sank",
+     "The nets filled with fish",
+     "It started raining"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Jesus said they would now fish for...",
+    "options": [
+     "Gold",
+     "Whales",
+     "People"
+    ],
+    "answer": 2
+   }
+  ]
+ },
+ "storm": {
+  "text": [
+   "One evening Jesus said to His disciples, \"Let's go across to the other side of the lake.\"",
+   "They got into a boat, and Jesus was so tired that He fell asleep on a cushion at the back.",
+   "Suddenly a huge storm came! The wind howled and big waves crashed into the boat. It began to fill with water!",
+   "The disciples were terrified. They woke Jesus up: \"Teacher, don't you care that we're going to drown?\"",
+   "Jesus stood up. He said to the wind and the waves, \"Quiet! Be still!\"",
+   "At once the wind stopped, and the lake became completely calm.",
+   "Jesus asked, \"Why were you so afraid? Do you still not trust me?\" The disciples whispered, \"Who is this? Even the wind and waves obey Him!\""
+  ],
+  "quiz": [
+   {
+    "q": "What was Jesus doing when the storm came?",
+    "options": [
+     "Fishing",
+     "Sleeping",
+     "Eating"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Jesus say to the storm?",
+    "options": [
+     "\"Quiet! Be still!\"",
+     "\"Go away!\"",
+     "\"Help!\""
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What obeyed Jesus?",
+    "options": [
+     "Only the disciples",
+     "The wind and the waves",
+     "Nothing"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "five-thousand": {
+  "text": [
+   "A huge crowd followed Jesus up a hillside. There were about five thousand men, plus women and children!",
+   "It got late, and everyone was hungry. Jesus asked Philip, \"Where can we buy bread for all these people?\"",
+   "Philip said, \"Even lots of money wouldn't be enough!\"",
+   "Andrew found a boy who had five small loaves of bread and two little fish. \"But what good is that with so many people?\"",
+   "Jesus told everyone to sit down on the grass. He took the loaves and fish, thanked God, and shared them out.",
+   "Everyone ate as much as they wanted, and they were full!",
+   "Afterwards the disciples collected the leftovers, and they filled twelve baskets! Jesus did a lot with a boy's small lunch."
+  ],
+  "quiz": [
+   {
+    "q": "What did the boy have?",
+    "options": [
+     "Five loaves and two fish",
+     "Two loaves and five fish",
+     "A big cake"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Jesus do before sharing the food?",
+    "options": [
+     "He thanked God",
+     "He cooked it",
+     "He sold it"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "How many baskets of leftovers were there?",
+    "options": [
+     "None",
+     "Five",
+     "Twelve"
+    ],
+    "answer": 2
+   }
+  ]
+ },
+ "walks-on-water": {
+  "text": [
+   "Jesus sent His disciples ahead in a boat while He went up a mountain to pray.",
+   "During the night the wind blew hard, and the waves tossed the boat around.",
+   "Very early in the morning, the disciples saw someone walking towards them on the water! \"It's a ghost!\" they screamed.",
+   "But Jesus said, \"Take courage! It's me. Don't be afraid.\"",
+   "Peter said, \"Lord, if it's You, tell me to come to You on the water.\" Jesus said, \"Come!\"",
+   "Peter climbed out of the boat and walked on the water towards Jesus! But when he looked at the wind and waves, he got scared and began to sink. \"Lord, save me!\"",
+   "Jesus reached out His hand and caught him. When they climbed into the boat, the wind stopped, and the disciples worshipped Jesus."
+  ],
+  "quiz": [
+   {
+    "q": "What did the disciples think they saw?",
+    "options": [
+     "A ghost",
+     "A fish",
+     "A boat"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who walked on the water with Jesus?",
+    "options": [
+     "John",
+     "Peter",
+     "Andrew"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Why did Peter start to sink?",
+    "options": [
+     "He looked at the wind and waves",
+     "He was too heavy",
+     "He tripped"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "zacchaeus": {
+  "text": [
+   "Zacchaeus was a rich tax collector in Jericho. People didn't like him, because he cheated them out of money.",
+   "One day Jesus came to town, and a big crowd gathered. Zacchaeus wanted to see Him, but he was very short!",
+   "So he ran ahead and climbed up a sycamore tree.",
+   "When Jesus reached the tree, He looked up and said, \"Zacchaeus, hurry and come down! I'm coming to your house today.\"",
+   "Zacchaeus climbed down and welcomed Jesus happily. But the crowd grumbled, \"Jesus is going to a sinner's house!\"",
+   "Zacchaeus stood up and said, \"Lord, I will give half of everything I own to the poor. And if I cheated anyone, I'll pay back four times as much!\"",
+   "Jesus said, \"Today salvation has come to this house. I came to find and save people who are lost.\""
+  ],
+  "quiz": [
+   {
+    "q": "Why did Zacchaeus climb a tree?",
+    "options": [
+     "He was short",
+     "He was hiding",
+     "He wanted fruit"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Where did Jesus want to go?",
+    "options": [
+     "To the temple",
+     "To Zacchaeus's house",
+     "To the market"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "How did meeting Jesus change Zacchaeus?",
+    "options": [
+     "He became generous and honest",
+     "He became taller",
+     "He moved away"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "good-samaritan": {
+  "text": [
+   "Someone asked Jesus, \"Who is my neighbour?\" So Jesus told this story.",
+   "A man was walking along a lonely road when robbers attacked him. They took everything and left him hurt by the side of the road.",
+   "A priest came along. He saw the man... and walked past on the other side.",
+   "Next a temple helper came. He looked at the man... and walked past too.",
+   "Then a Samaritan came by. Samaritans and Jews usually didn't get along. But he felt sorry for the man.",
+   "He bandaged his wounds, put him on his own donkey, and took him to an inn. He even paid for him to stay until he got better.",
+   "Jesus asked, \"Which one was a good neighbour?\" \"The one who showed kindness.\" Jesus said, \"Go and do the same.\""
+  ],
+  "quiz": [
+   {
+    "q": "What happened to the man on the road?",
+    "options": [
+     "Robbers attacked him",
+     "He got lost",
+     "He fell asleep"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who stopped to help him?",
+    "options": [
+     "The priest",
+     "The temple helper",
+     "The Samaritan"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What did Jesus say we should do?",
+    "options": [
+     "Walk past",
+     "Be kind like the Samaritan",
+     "Stay home"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "lost-sheep": {
+  "text": [
+   "Jesus told a story about a shepherd who had one hundred sheep.",
+   "One day the shepherd counted them: ninety-seven, ninety-eight, ninety-nine... One sheep was missing!",
+   "The shepherd left the ninety-nine sheep and went looking for the lost one. He searched and searched until he found it.",
+   "Then he lifted the little sheep onto his shoulders and carried it home, full of joy.",
+   "He called his friends: \"Celebrate with me! I found my lost sheep!\"",
+   "Jesus said, \"In the same way, there is great joy in heaven when one person who is lost comes back to God.\"",
+   "God loves each one of us that much. He will always come looking for us."
+  ],
+  "quiz": [
+   {
+    "q": "How many sheep did the shepherd have?",
+    "options": [
+     "Ten",
+     "Fifty",
+     "One hundred"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What did the shepherd do when one was lost?",
+    "options": [
+     "He forgot about it",
+     "He searched until he found it",
+     "He bought a new one"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "When is there joy in heaven?",
+    "options": [
+     "When someone lost comes back to God",
+     "When it's sunny",
+     "When sheep are sold"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "prodigal": {
+  "text": [
+   "Jesus told a story about a father with two sons.",
+   "The younger son said, \"Give me my share of your money now!\" He went far away and wasted it all on wild living.",
+   "Then a famine came, and he had nothing. He got a job feeding pigs, and he was so hungry that even the pigs' food looked good!",
+   "He thought, \"My father's servants have plenty to eat. I'll go home and say, 'I'm sorry. Let me be one of your servants.'\"",
+   "While he was still a long way off, his father saw him. The father ran to him, hugged him and kissed him!",
+   "The father said, \"Bring the best robe and a ring, and let's have a feast! My son was lost and now he is found!\"",
+   "God is like that father. When we come back to Him, He runs to welcome us with love."
+  ],
+  "quiz": [
+   {
+    "q": "What did the younger son do with his money?",
+    "options": [
+     "He saved it",
+     "He wasted it",
+     "He gave it to the poor"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the father do when he saw his son coming?",
+    "options": [
+     "He ran and hugged him",
+     "He shut the door",
+     "He shouted at him"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Who is the father in this story like?",
+    "options": [
+     "A king",
+     "God",
+     "A teacher"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "triumphal-entry": {
+  "text": [
+   "Jesus and His disciples were coming near to Jerusalem for the Passover festival.",
+   "Jesus sent two disciples to a village. \"You'll find a donkey and her colt. Bring them to me.\"",
+   "They put their cloaks on the donkey, and Jesus rode into Jerusalem, just as a prophet had said long before: \"Your king comes to you, gentle and riding on a donkey.\"",
+   "A huge crowd came out to meet Him. They spread their cloaks on the road and waved branches from the trees.",
+   "Everyone shouted, \"Hosanna! Blessed is He who comes in the name of the Lord! Hosanna in the highest!\"",
+   "The whole city was buzzing. People asked, \"Who is this?\" And the crowds answered, \"This is Jesus, the prophet from Nazareth!\""
+  ],
+  "quiz": [
+   {
+    "q": "What did Jesus ride into Jerusalem?",
+    "options": [
+     "A horse",
+     "A donkey",
+     "A camel"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the people spread on the road?",
+    "options": [
+     "Cloaks and branches",
+     "Flowers and sand",
+     "Gold coins"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did the crowd shout?",
+    "options": [
+     "\"Hosanna!\"",
+     "\"Go away!\"",
+     "\"Goodbye!\""
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "resurrection": {
+  "text": [
+   "Jesus had died on a cross. His friends laid His body in a tomb cut out of rock, and a huge stone was rolled across the entrance.",
+   "Early on Sunday morning, some women who loved Jesus went to the tomb.",
+   "Suddenly there was an earthquake! An angel came down from heaven, rolled back the stone and sat on it. He shone like lightning!",
+   "The angel said to the women, \"Don't be afraid. I know you are looking for Jesus. He is not here. He has risen, just as He said!\"",
+   "\"Come and see where He lay. Then go quickly and tell His disciples!\"",
+   "The women ran off, afraid but filled with joy. On the way, Jesus Himself met them! \"Greetings,\" He said. They fell down and worshipped Him.",
+   "Jesus is alive! He beat death, and because He lives, everyone who trusts Him will live with Him forever."
+  ],
+  "quiz": [
+   {
+    "q": "What was across the entrance of the tomb?",
+    "options": [
+     "A big stone",
+     "A wooden door",
+     "A curtain"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did the angel say?",
+    "options": [
+     "\"He is sleeping\"",
+     "\"He has risen!\"",
+     "\"Come back later\""
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who met the women on their way?",
+    "options": [
+     "Jesus",
+     "The soldiers",
+     "Peter"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "damascus": {
+  "text": [
+   "Saul hated people who followed Jesus. He wanted to put them all in prison.",
+   "He set off for the city of Damascus to arrest Christians there.",
+   "Suddenly a bright light from heaven flashed around him! Saul fell to the ground and heard a voice: \"Saul, Saul, why are you persecuting me?\"",
+   "\"Who are you, Lord?\" Saul asked. \"I am Jesus,\" the voice said.",
+   "When Saul got up, he couldn't see anything. His friends led him by the hand into Damascus.",
+   "God sent a follower of Jesus named Ananias to pray for him. Something like scales fell from Saul's eyes, and he could see again!",
+   "Saul was baptized, and he started telling everyone, \"Jesus is the Son of God!\" Later he became known as Paul, and he told the whole world about Jesus."
+  ],
+  "quiz": [
+   {
+    "q": "Where was Saul going?",
+    "options": [
+     "Damascus",
+     "Rome",
+     "Egypt"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What happened on the road?",
+    "options": [
+     "A bright light and Jesus spoke",
+     "A storm",
+     "He met a lion"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Saul do after he could see again?",
+    "options": [
+     "He went home",
+     "He told people about Jesus",
+     "He arrested Ananias"
+    ],
+    "answer": 1
+   }
+  ]
+ }
+}

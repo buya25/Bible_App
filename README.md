@@ -18,6 +18,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Verse study:** select verses and tap **Study** to compare all translations side by side, read the original, and see manuscript differences.
 - **Manuscript differences:** the reader marks verses where manuscripts differ with †. The Study tab lists verses that are missing from the oldest manuscripts (for example Matthew 17:21 and Acts 8:37), the longer passages (Mark 16:9–20, John 7:53–8:11), the largest wording differences, and Old Testament words found in the Septuagint or Dead Sea Scrolls but not in the standard Hebrew text.
 - **Bible Stories:** 155 stories in order, from Creation to the new heaven and earth, in 13 sections (Abraham, Joseph, Moses, David, the life of Jesus, parables, the early church…). Each has a one-line introduction and the story's text as flowing paragraphs, in an easy modern translation (BSB) by default with one-tap switching. Each also has two or three **Talk about it** questions for families, small groups or reflection. You can listen to just that story, follow your progress, search, or follow the **Bible Stories, One a Day** reading plan (finishing a story completes its day). The Today screen suggests the next story.
+- **Kids stories:** switch Stories to **Kids** for 40 favourite stories with their own pictures (original illustrations drawn in SVG, so they work offline), a simple retelling for about ages 6–10 (with a switch to the Bible text), read-aloud, and a three-question quiz with stars. Best scores are saved, and the Kids page shows your star total.
 - **Audio Bible:** tap ▶ in the reader to listen. It uses the device's voices, preferring natural-sounding male voices, with styles **Natural**, **Calm & slower** and **British narrator**, plus a guide for installing better voices. Reading continues from chapter to chapter and highlights each verse. A mini player stays available while you browse, with a sleep timer, lock-screen controls where supported, and an optional soft background (pad or gentle rain, generated without audio files).
 - **Reader:** chapter picker, previous/next buttons, swipe gestures on touch screens, arrow keys on desktop, and paragraph or verse-by-verse layout.
 - **Highlights:** five colours, applied to one verse or several at once.
@@ -94,6 +95,7 @@ The tests cover reference parsing, search, reading-plan schedules, streaks, gram
 | `js/audio.js` | Audio Bible player and voice selection |
 | `js/feedback.js`, `js/config.js` | Feedback form; publisher settings (GitHub repo, optional email) |
 | `data/story-questions.json` | Discussion questions for each story |
+| `js/story-art.js`, `data/kids-stories.json` | Kids story pictures (SVG); Kids retellings and quizzes |
 | `js/morph.js` | Turns Hebrew/Greek grammar codes into plain English |
 | `data/translations/` | One JSON file per translation, aligned to KJV verse numbering |
 | `data/original/` | Hebrew/Greek words for each verse (one file per book, loaded on demand) |

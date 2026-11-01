@@ -46,3 +46,29 @@ test('story questions and the one-story-a-day plan', async ({ page }) => {
   await page.goto('./#/plans');
   await expect(page.locator('[data-done="0"]')).toBeChecked();
 });
+
+test('kids stories: pictures, simple text, listening and a quiz with stars', async ({ page }) => {
+  await page.goto('./#/stories');
+  await page.locator('[data-story-mode="kids"]').click();
+  await expect(page.locator('.kids-card')).toHaveCount(40);
+  await expect(page.locator('.kids-card svg').first()).toBeVisible();
+  await page.locator('.kids-card', { hasText: 'Noah and the Flood' }).click();
+  await expect(page.locator('.story-art svg')).toBeVisible();
+  await expect(page.locator('.kids-text')).toContainText('two by two');
+  await page.locator('#story-listen').click();
+  await expect(page.locator('#player-ref')).toContainText('Noah and the Flood · part');
+  await expect(page.locator('#player')).toBeHidden({ timeout: 20_000 });
+  // Answer the quiz: two right, one wrong.
+  await page.locator('[data-q="0"] [data-option="2"]').click(); // An ark (right)
+  await expect(page.locator('[data-q="0"] .right')).toHaveText('An ark');
+  await page.locator('[data-q="1"] [data-option="1"]').click(); // wrong
+  await expect(page.locator('[data-q="1"] .wrong')).toBeVisible();
+  await page.locator('[data-q="2"] [data-option="1"]').click(); // A rainbow (right)
+  await expect(page.locator('.quiz-result')).toContainText('You got 2 of 3');
+  // Switch to the Bible text.
+  await page.locator('.story-view [data-story-mode="everyone"]').click();
+  await expect(page.locator('.story-intro')).toBeVisible();
+  await page.goto('./#/stories');
+  await page.locator('[data-story-mode="kids"]').click();
+  await expect(page.locator('.star-total')).toContainText('2 of 120 stars');
+});

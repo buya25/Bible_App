@@ -174,10 +174,12 @@ function adjacent(book, chapter, dir) {
  * options.until = { chapter, verse } stops at the end of a passage (e.g. a story);
  * options.bible reads from a specific translation; options.title names it in the player.
  */
-export function play(book, chapter, verse = 1, { until = null, bible = null, title = null } = {}) {
+export function play(book, chapter, verse = 1, { until = null, bible = null, title = null, texts = null } = {}) {
   if (!supported()) return false;
   synth.cancel();
-  Object.assign(state, { status: 'playing', book, chapter, verse, announce: verse === 1 && !title, until, bible, title });
+  // `texts` reads a list of paragraphs (e.g. a Kids retelling) instead of Bible verses.
+  if (texts) Object.assign(state, { status: 'playing', book, chapter: 1, verse: 1, announce: false, until: { chapter: 1, verse: texts.length }, bible: { books: { [book]: [texts] } }, title, texts });
+  else Object.assign(state, { status: 'playing', book, chapter, verse, announce: verse === 1 && !title, until, bible, title, texts: null });
   startAmbient();
   speakCurrent();
   return true;
