@@ -2,7 +2,7 @@
 // VERSION is stamped by the publish workflow, so every release changes this file and the browser
 // notices the update. A new version waits until the reader taps "Update" (see js/app.js).
 const VERSION = 'dev';
-const CACHE = `bible-app-${VERSION}-v16`;
+const CACHE = `bible-app-${VERSION}-v17`;
 const ASSETS = [
   './',
   'index.html',

@@ -2,7 +2,7 @@
 // the Law of Moses, prayers). Each item is a passage with a short explanation, read like a story.
 import { load } from './data.js';
 import { escapeHtml, readHref } from './util.js';
-import { parsePassage, passageVerses, toParagraphs, storyTabs } from './stories.js';
+import { parsePassage, passageVerses, toParagraphs, storyTabs, loadStories, loadKidsStories, storyHref } from './stories.js';
 
 /** [{ id, title, icon, description, pray?, items: [{ n, title, ref, explanation, related: [ref] }] }] */
 export async function loadCollections() {
@@ -20,6 +20,11 @@ export const itemHref = (cid, n) => `#/stories/collections/${cid}/${n}`;
 
 const doneKey = (cid, n) => `${cid}:${n}`;
 const isDone = (store, cid, n) => Boolean(store.get().collectionsRead?.[doneKey(cid, n)]);
+
+/** The story with a Kids version that starts where this passage starts, if any. */
+export function kidsStoryFor(passage, stories, kids) {
+  return stories.find((st) => kids[st.id] && st.book === passage.book && st.chapter === passage.start.chapter && st.verse === passage.start.verse) || null;
+}
 
 /** Router entry. parts: ['collections', cid?, n?]. ctx as for renderStory. */
 export async function renderCollections(main, parts, ctx) {
@@ -45,7 +50,7 @@ function renderHome(main, all, store) {
   main.innerHTML = `
     ${storyTabs('collections')}
     <h1>Collections</h1>
-    <p class="muted">The parables, the miracles, the Ten Commandments, the Law of Moses and the great prayers of the Bible, gathered in one place. Each passage has a short explanation.</p>
+    <p class="muted">The parables and miracles, the Ten Commandments and the Law of Moses, great prayers, psalms for every need, great teachings and God's promises, gathered in one place. Each passage has a short explanation.</p>
     <div class="collection-grid">${all
       .map((c) => {
         const done = c.items.filter((it) => isDone(store, c.id, it.n)).length;
@@ -79,6 +84,8 @@ async function renderItem(main, c, item, ctx) {
   const t = translations.find((x) => x.id === tid) || translations[0];
   const bible = await ctx.loadTranslation(t.id);
   const verses = passageVerses(bible, passage).filter((v) => v.text);
+  const [stories, kids] = await Promise.all([loadStories(), loadKidsStories()]).catch(() => [[], {}]);
+  const kidsStory = kidsStoryFor(passage, stories, kids);
   const showNumbers = store.get().settings.storyVerseNumbers;
   const prev = c.items[item.n - 2];
   const next = c.items[item.n];
@@ -99,6 +106,7 @@ async function renderItem(main, c, item, ctx) {
       <div class="story-tools">
         <button class="btn btn-primary" id="item-listen">▶ Listen</button>
         ${c.pray ? '<button class="btn" id="item-pray">🙏 Pray this</button>' : ''}
+        ${kidsStory ? `<a class="btn" id="item-kids" href="${storyHref(kidsStory.id)}">🧒 Kids version + quiz</a>` : ''}
         <div class="segmented story-translation" role="group" aria-label="Translation">${translations
           .map((x) => `<button data-story-t="${x.id}" aria-pressed="${x.id === t.id}" title="${escapeHtml(x.name)}">${x.abbr}</button>`)
           .join('')}</div>
@@ -145,6 +153,8 @@ async function renderItem(main, c, item, ctx) {
     const ok = ctx.audio.play(passage.book, passage.start.chapter, passage.start.verse, { until: passage.end, bible, title: item.title });
     if (!ok) ctx.toast('Listening is not supported in this browser');
   };
+  const kidsLink = document.getElementById('item-kids');
+  if (kidsLink) kidsLink.onclick = () => store.update((s) => (s.settings.storyMode = 'kids'));
   const pray = document.getElementById('item-pray');
   if (pray) pray.onclick = () => ctx.pray?.(item, passage);
 }

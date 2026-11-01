@@ -50,7 +50,7 @@ test('story questions and the one-story-a-day plan', async ({ page }) => {
 test('kids stories: pictures, simple text, listening and a quiz with stars', async ({ page }) => {
   await page.goto('./#/stories');
   await page.locator('[data-story-mode="kids"]').click();
-  await expect(page.locator('.kids-card')).toHaveCount(40);
+  await expect(page.locator('.kids-card')).toHaveCount(50);
   await expect(page.locator('.kids-card svg').first()).toBeVisible();
   await page.locator('.kids-card', { hasText: 'Noah and the Flood' }).click();
   await expect(page.locator('.story-art svg')).toBeVisible();
@@ -70,14 +70,14 @@ test('kids stories: pictures, simple text, listening and a quiz with stars', asy
   await expect(page.locator('.story-intro')).toBeVisible();
   await page.goto('./#/stories');
   await page.locator('[data-story-mode="kids"]').click();
-  await expect(page.locator('.star-total')).toContainText('2 of 120 stars');
+  await expect(page.locator('.star-total')).toContainText('2 of 150 stars');
 });
 
 test('collections: commandments, parables and praying a Bible prayer', async ({ page }) => {
   await page.goto('./#/stories');
   await page.locator('.story-tabs a', { hasText: 'Collections' }).click();
   await expect(page.locator('h1')).toHaveText('Collections');
-  await expect(page.locator('.collection-card')).toHaveCount(5);
+  await expect(page.locator('.collection-card')).toHaveCount(8);
   await expectNoHorizontalScroll(page);
   await page.locator('.collection-card', { hasText: 'Ten Commandments' }).click();
   await expect(page.locator('.story-row')).toHaveCount(13);
@@ -94,6 +94,7 @@ test('collections: commandments, parables and praying a Bible prayer', async ({ 
   await page.locator('#collection-filter').fill('samaritan');
   await expect(page.locator('.story-list li:not([hidden])')).toHaveCount(1);
   await page.locator('.story-list li:not([hidden]) a').click();
+  await expect(page.locator('#item-kids')).toBeVisible();
   await page.locator('#item-listen').click();
   await expect(page.locator('#player')).toBeHidden({ timeout: 20_000 });
   expect(await page.evaluate(() => window.__spoken.length)).toBe(13); // Luke 10:25-37
@@ -108,4 +109,10 @@ test('collections: commandments, parables and praying a Bible prayer', async ({ 
   await expect(page.locator('main')).toContainText("The Lord's Prayer");
   await page.goto('./#/stories/collections');
   await expect(page.locator('.collection-card', { hasText: 'Ten Commandments' })).toContainText('1 read');
+  // A parable with a Kids version opens it in Kids mode, with a picture and a quiz.
+  await page.goto('./#/stories/collections/parables/1');
+  await page.locator('#item-kids').click();
+  await expect(page.locator('.story h1')).toHaveText('The Sower');
+  await expect(page.locator('.story-art svg')).toBeVisible();
+  await expect(page.locator('.quiz-q')).toHaveCount(3);
 });

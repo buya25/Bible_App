@@ -9,7 +9,7 @@ const kids = read('data/kids-stories.json');
 const storyIds = new Set(read('data/stories.json').flatMap((s) => s.stories.map(([id]) => id)));
 
 test('every kids story is a real story with text, a picture and a 3-question quiz', () => {
-  assert.equal(Object.keys(kids).length, 40);
+  assert.equal(Object.keys(kids).length, 50);
   for (const [id, k] of Object.entries(kids)) {
     assert.ok(storyIds.has(id), `unknown story ${id}`);
     assert.ok(k.text.length >= 5 && k.text.every((p) => p.length > 20 && p.length < 400), `${id}: text`);

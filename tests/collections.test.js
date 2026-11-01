@@ -30,11 +30,29 @@ test('collections are well formed and every passage exists', () => {
       for (const r of related) checkRef(r, `${c.id}/${title} related`);
     }
   }
-  for (const id of ['parables', 'miracles', 'ten-commandments', 'law-of-moses', 'prayers']) assert.ok(ids.has(id), id);
+  for (const id of ['parables', 'miracles', 'ten-commandments', 'law-of-moses', 'prayers', 'psalms', 'teachings', 'promises']) assert.ok(ids.has(id), id);
 });
 
 test('the ten commandments are all there, in order', () => {
   const tc = collections.find((c) => c.id === 'ten-commandments');
   const numbered = tc.items.map(([t]) => t).filter((t) => /^\d+\./.test(t));
   assert.deepEqual(numbered.map((t) => Number(t.split('.')[0])), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+});
+
+test('kids versions are linked from collections and every kids story has a picture', async () => {
+  const { artIds } = await import('../js/story-art.js');
+  const kids = read('data/kids-stories.json');
+  const art = new Set(artIds());
+  for (const id of Object.keys(kids)) {
+    assert.ok(art.has(id), `${id} has no picture`);
+    assert.equal(kids[id].quiz.length, 3, id);
+    for (const q of kids[id].quiz) assert.ok(q.answer >= 0 && q.answer < q.options.length, `${id}: ${q.q}`);
+  }
+  const { kidsStoryFor } = await import('../js/collections.js');
+  const stories = read('data/stories.json').flatMap((s) => s.stories).map(([id, , ref]) => {
+    const p = parsePassage(ref);
+    return { id, book: p.book, chapter: p.start.chapter, verse: p.start.verse };
+  });
+  const linked = collections.flatMap((c) => c.items.map(([, ref]) => kidsStoryFor(parsePassage(ref), stories, kids)?.id).filter(Boolean));
+  for (const id of ['sower', 'builders', 'talents', 'wine', 'roof', 'jairus', 'bartimaeus', 'lazarus', 'prodigal', 'storm']) assert.ok(linked.includes(id), id);
 });

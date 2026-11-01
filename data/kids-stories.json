@@ -1590,5 +1590,395 @@
     "answer": 1
    }
   ]
+ },
+ "sower": {
+  "text": [
+   "Jesus told a story about a farmer who went out to plant seeds. He scattered them by hand as he walked.",
+   "Some seeds fell on the hard path, and birds swooped down and ate them up.",
+   "Some fell on rocky ground. They sprang up fast, but their roots were tiny, so they dried up in the hot sun.",
+   "Some fell among thorny weeds, and the weeds grew up and choked them.",
+   "But some fell on good soil. They grew strong and tall and gave a huge harvest!",
+   "Jesus explained: the seed is God's word. When we listen, understand and keep God's word in our hearts, we are like the good soil, and our lives grow good fruit."
+  ],
+  "quiz": [
+   {
+    "q": "What did the birds do to the seeds on the path?",
+    "options": [
+     "Ate them",
+     "Planted them",
+     "Watered them"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "Why did the seeds on rocky ground dry up?",
+    "options": [
+     "Too much rain",
+     "Their roots were tiny",
+     "The farmer picked them"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What is the seed a picture of?",
+    "options": [
+     "Money",
+     "God's word",
+     "Food"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "mustard-seed": {
+  "text": [
+   "Jesus wanted people to understand God's kingdom, so He talked about a mustard seed.",
+   "A mustard seed is one of the tiniest seeds of all, about as small as a dot on this page.",
+   "But when it is planted, it grows and grows until it becomes a big plant, like a tree!",
+   "It grows so big that birds come and build their nests in its branches.",
+   "God's kingdom is like that. It started small, with Jesus and a few friends, and it keeps growing all over the world.",
+   "Even small things we do for God, like a kind word or a prayer, can grow into something wonderful."
+  ],
+  "quiz": [
+   {
+    "q": "How big is a mustard seed?",
+    "options": [
+     "Very tiny",
+     "As big as an apple",
+     "As big as a rock"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What came to live in the grown plant?",
+    "options": [
+     "Fish",
+     "Birds",
+     "Lions"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What is the mustard seed a picture of?",
+    "options": [
+     "God's kingdom growing",
+     "A garden",
+     "A storm"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "builders": {
+  "text": [
+   "Jesus told a story about two men who each built a house.",
+   "The wise man dug down deep and built his house on solid rock.",
+   "The foolish man couldn't be bothered. He built his house quickly on soft sand.",
+   "Then a big storm came! Rain poured down, the rivers rose, and the wind blew hard against both houses.",
+   "The house on the rock stood firm. But the house on the sand fell down with a great crash!",
+   "Jesus said: anyone who hears my words and does them is like the wise builder. Their life stands strong, even in hard times."
+  ],
+  "quiz": [
+   {
+    "q": "Where did the wise man build his house?",
+    "options": [
+     "On sand",
+     "On rock",
+     "In a tree"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What happened to the house on the sand?",
+    "options": [
+     "It stood firm",
+     "It fell down",
+     "It floated away"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who is like the wise builder?",
+    "options": [
+     "People who hear Jesus' words and do them",
+     "People with big houses",
+     "People who never get wet"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "pharisee-tax-collector": {
+  "text": [
+   "Jesus told a story about two men who went to the temple to pray.",
+   "One was a Pharisee, a very religious man. He stood up proudly and prayed, \"Thank you, God, that I am better than other people!\"",
+   "The other was a tax collector. Many people thought tax collectors were cheats.",
+   "He stood far away. He was so sorry for the wrong things he had done that he couldn't even look up.",
+   "He prayed, \"God, please have mercy on me. I am a sinner.\"",
+   "Jesus said it was the tax collector, the humble one, who went home right with God. God loves it when we are honest with Him."
+  ],
+  "quiz": [
+   {
+    "q": "Where did the two men go?",
+    "options": [
+     "To the market",
+     "To the temple to pray",
+     "To the sea"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the tax collector ask God for?",
+    "options": [
+     "Money",
+     "Mercy",
+     "A big house"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "Who went home right with God?",
+    "options": [
+     "The proud Pharisee",
+     "The humble tax collector",
+     "Neither"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "talents": {
+  "text": [
+   "Jesus told a story about a rich man who was going on a long journey.",
+   "Before he left, he gave his servants money to look after: five bags of gold to one, two bags to another, and one bag to the third.",
+   "The first two servants worked hard and doubled their money!",
+   "But the third servant was afraid. He dug a hole and hid his bag of gold in the ground.",
+   "When the master came home, he was delighted with the first two. \"Well done, good and faithful servants!\"",
+   "But he was sad that the third servant had done nothing. God gives each of us gifts, and He wants us to use them well."
+  ],
+  "quiz": [
+   {
+    "q": "How many bags of gold did the first servant get?",
+    "options": [
+     "One",
+     "Two",
+     "Five"
+    ],
+    "answer": 2
+   },
+   {
+    "q": "What did the third servant do with his gold?",
+    "options": [
+     "Spent it",
+     "Hid it in the ground",
+     "Gave it away"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What does God want us to do with our gifts?",
+    "options": [
+     "Hide them",
+     "Use them well",
+     "Forget them"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "wine": {
+  "text": [
+   "Jesus, His mother Mary and His friends went to a wedding party in a town called Cana.",
+   "In the middle of the party, the wine ran out! That would be very embarrassing for the family.",
+   "Mary told Jesus, and then she told the servants, \"Do whatever He tells you.\"",
+   "Jesus told the servants to fill six huge stone jars with water, right up to the top.",
+   "\"Now take some to the man in charge of the feast,\" said Jesus. When he tasted it, the water had become wine, the best wine of all!",
+   "This was Jesus' very first miracle, and His friends believed in Him."
+  ],
+  "quiz": [
+   {
+    "q": "Where was the wedding?",
+    "options": [
+     "Cana",
+     "Rome",
+     "Egypt"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did the servants fill the jars with?",
+    "options": [
+     "Milk",
+     "Water",
+     "Sand"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the water become?",
+    "options": [
+     "Juice",
+     "Wine",
+     "Ice"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "roof": {
+  "text": [
+   "One day a huge crowd squeezed into a house to hear Jesus teach. There was no room at all, not even by the door.",
+   "Four friends arrived carrying a man on a mat. Their friend couldn't walk.",
+   "They couldn't get in, so they climbed up onto the flat roof and dug a hole in it!",
+   "Then they carefully lowered their friend down on his mat, right in front of Jesus.",
+   "Jesus saw how much they believed. He said to the man, \"Your sins are forgiven. Get up, pick up your mat, and walk!\"",
+   "And the man jumped up, picked up his mat and walked out. Everyone was amazed and praised God."
+  ],
+  "quiz": [
+   {
+    "q": "How many friends carried the man?",
+    "options": [
+     "Two",
+     "Four",
+     "Ten"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "How did they get him to Jesus?",
+    "options": [
+     "Through the window",
+     "Through a hole in the roof",
+     "Through the back door"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did the man do after Jesus healed him?",
+    "options": [
+     "Picked up his mat and walked",
+     "Went to sleep",
+     "Climbed the roof"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "jairus": {
+  "text": [
+   "A man named Jairus came to Jesus and fell at His feet. \"My little daughter is very sick. Please come and help her!\"",
+   "On the way, a woman who had been ill for twelve years touched Jesus' cloak, and she was healed straight away!",
+   "Then some men came with sad news: \"Your daughter has died. Don't trouble Jesus anymore.\"",
+   "But Jesus said to Jairus, \"Don't be afraid. Just believe.\"",
+   "At the house, Jesus took the girl by the hand and said, \"Little girl, get up!\"",
+   "And she got up and walked around! She was twelve years old. Jesus told them to give her something to eat."
+  ],
+  "quiz": [
+   {
+    "q": "Who asked Jesus for help?",
+    "options": [
+     "Jairus",
+     "Peter",
+     "Herod"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did the sick woman touch?",
+    "options": [
+     "Jesus' cloak",
+     "A tree",
+     "The temple"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Jesus say to the girl?",
+    "options": [
+     "Go to sleep",
+     "Little girl, get up!",
+     "Be quiet"
+    ],
+    "answer": 1
+   }
+  ]
+ },
+ "bartimaeus": {
+  "text": [
+   "A blind man named Bartimaeus sat by the road near the city of Jericho, begging for money.",
+   "He heard a crowd coming and learned that Jesus was passing by!",
+   "Bartimaeus shouted as loud as he could, \"Jesus, have mercy on me!\"",
+   "People told him to be quiet, but he shouted even louder.",
+   "Jesus stopped and called him. Bartimaeus threw off his cloak, jumped up and came. \"What do you want me to do for you?\" Jesus asked. \"I want to see!\"",
+   "\"Go, your faith has healed you,\" said Jesus. Right away Bartimaeus could see, and he followed Jesus down the road."
+  ],
+  "quiz": [
+   {
+    "q": "What was wrong with Bartimaeus?",
+    "options": [
+     "He couldn't walk",
+     "He couldn't see",
+     "He couldn't hear"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did he do when people told him to be quiet?",
+    "options": [
+     "Went home",
+     "Shouted even louder",
+     "Fell asleep"
+    ],
+    "answer": 1
+   },
+   {
+    "q": "What did Bartimaeus do after he could see?",
+    "options": [
+     "Followed Jesus",
+     "Went to the sea",
+     "Built a house"
+    ],
+    "answer": 0
+   }
+  ]
+ },
+ "lazarus": {
+  "text": [
+   "Jesus had three close friends, Mary, Martha and their brother Lazarus.",
+   "Lazarus became very sick, and by the time Jesus arrived, Lazarus had died and had been in the tomb for four days.",
+   "Martha said, \"Lord, if you had been here, my brother would not have died.\" Jesus said, \"I am the resurrection and the life.\"",
+   "Jesus was so sad that He cried with His friends.",
+   "Then He went to the tomb and asked them to roll the stone away. He prayed, then called out loudly, \"Lazarus, come out!\"",
+   "And Lazarus walked out of the tomb, alive! Many people who saw it believed in Jesus."
+  ],
+  "quiz": [
+   {
+    "q": "Who were Lazarus's sisters?",
+    "options": [
+     "Mary and Martha",
+     "Ruth and Naomi",
+     "Sarah and Hannah"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Jesus do when He saw His friends were sad?",
+    "options": [
+     "He cried with them",
+     "He left",
+     "He laughed"
+    ],
+    "answer": 0
+   },
+   {
+    "q": "What did Jesus call out at the tomb?",
+    "options": [
+     "Roll the stone!",
+     "Lazarus, come out!",
+     "Go home!"
+    ],
+    "answer": 1
+   }
+  ]
  }
 }
