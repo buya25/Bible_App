@@ -442,6 +442,10 @@ main { padding-bottom: 80px; }
 .story-text .sv { border-radius: 4px; }
 .story-text .sv.speaking { background: var(--select); box-shadow: none; }
 .story-text sup { font-family: var(--font-ui); font-size: .6em; color: var(--muted); margin-right: 3px; }
+.update-bar { position: sticky; top: 57px; z-index: 25; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface); border-bottom: 2px solid var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.update-bar[hidden] { display: none; }
+.update-bar > span { flex: 1; line-height: 1.4; }
+@media (min-width: 900px) { .update-bar { top: 60px; justify-content: center; } .update-bar > span { flex: 0 1 auto; } }
 .today-footer { text-align: center; color: var(--muted); margin: 18px 0 8px; }
 .fb-details { white-space: pre-wrap; font-size: 12px; background: var(--surface-2); padding: 8px; border-radius: 8px; overflow-wrap: anywhere; }
 .fb-actions { margin-top: 8px; }

@@ -13,6 +13,7 @@ import { enableReminders, checkReminder, downloadIcs } from './reminders.js';
 import { requestPersistence, recordVisit, safetyCardsHtml, promptInstall, storageStatusText, userDataCount, installInfo } from './safety.js';
 import { openTour, openMoreSheet } from './onboarding.js';
 import * as audio from './audio.js';
+import { VERSION } from './version.js';
 import { openFeedback } from './feedback.js';
 import { renderStoriesHome, renderStory, storyCardHtml, storyHref, loadStories } from './stories.js';
 import { renderTopicPage, renderDictionaryPage, loadTopicsIndex, loadDictionaryIndex, topicRowHtml, entryRowHtml } from './topics.js';
@@ -107,6 +108,10 @@ function openSettings() {
           <div class="row" style="margin-top:8px"><input type="time" class="picker-filter" style="width:auto;margin:0" value="${s.reminderTime}" data-time aria-label="Reminder time"><button class="btn btn-small" data-ics>Add to calendar</button></div>
           <p class="muted small">Notifications appear when you open the app after this time (and in the background on some installed apps). A calendar reminder works on every device.</p>
         </div>
+        <div class="field"><span class="label">App version</span>
+          <p class="muted small">Version ${escapeHtml(VERSION)}. Updates are checked automatically; a bar appears when one is ready.</p>
+          <button class="btn btn-small" data-check-update>Check for updates</button>
+        </div>
         <div class="field"><span class="label">Feedback</span>
           <p class="muted small">Found a problem or have an idea? We’d love to hear it.</p>
           <button class="btn btn-small" data-feedback>Send feedback</button>
@@ -145,6 +150,18 @@ function openSettings() {
     if (t?.hasAttribute('data-download')) downloadEverything(t);
     if (t?.hasAttribute('data-ics')) downloadIcs(store.get().settings.reminderTime);
     if (t?.hasAttribute('data-preview')) audio.preview(store.get().settings);
+    if (t?.hasAttribute('data-check-update')) {
+      t.disabled = true;
+      t.textContent = 'Checking…';
+      checkForUpdate().then((ready) => {
+        t.disabled = false;
+        t.textContent = 'Check for updates';
+        if (ready) {
+          dialog.close();
+          toast('A new version is ready. Tap Update at the top.');
+        } else toast(navigator.onLine === false ? 'You are offline. Try again when connected.' : 'You have the latest version.');
+      });
+    }
     if (t?.hasAttribute('data-feedback')) {
       dialog.close();
       return openFeedback(dialog, store);
@@ -1261,9 +1278,63 @@ function booksForFirstPage() {
   return [];
 }
 
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+/* ---------- Updates ----------
+ * A new release installs in the background and then waits. The update bar lets the reader switch to it
+ * with one tap: the waiting version takes over and the page reloads.
+ */
+let swRegistration = null;
+let updateRequested = false;
+const updateBar = document.getElementById('update-bar');
+
+function showUpdateBar() {
+  if (swRegistration?.waiting && navigator.serviceWorker.controller) updateBar.hidden = false;
 }
+
+function applyUpdate() {
+  const waiting = swRegistration?.waiting;
+  if (!waiting) return location.reload();
+  updateRequested = true;
+  document.getElementById('update-now').textContent = 'Updating…';
+  waiting.postMessage({ type: 'SKIP_WAITING' });
+}
+
+/** Ask the server for a new version. Returns true if one is ready to install. */
+async function checkForUpdate() {
+  if (!swRegistration) return false;
+  try {
+    await swRegistration.update();
+  } catch {
+    return false;
+  }
+  // An update found now may still be downloading; wait for it to finish installing.
+  const installing = swRegistration.installing;
+  if (installing) await new Promise((resolve) => installing.addEventListener('statechange', () => installing.state !== 'installing' && resolve()));
+  showUpdateBar();
+  return Boolean(swRegistration.waiting);
+}
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('sw.js');
+  } catch {
+    return;
+  }
+  showUpdateBar();
+  swRegistration.addEventListener('updatefound', () => {
+    const worker = swRegistration.installing;
+    worker?.addEventListener('statechange', () => worker.state === 'installed' && showUpdateBar());
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (updateRequested) location.reload(); // only after the reader chose to update (not on first install)
+  });
+  // Look for new versions whenever the app comes back to the screen, and every hour.
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && checkForUpdate());
+  setInterval(checkForUpdate, 60 * 60 * 1000);
+}
+
+document.getElementById('update-now').onclick = applyUpdate;
+document.getElementById('update-later').onclick = () => (updateBar.hidden = true);
 
 Promise.all([loadTranslationList(), loadStructure()])
   .then(async ([list, structure]) => {

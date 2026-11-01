@@ -37,6 +37,7 @@ A fast, offline-first Bible reading app for phones, tablets and desktops. It nee
 - **Keeping data safe:** the app asks the browser to protect its storage, suggests installing it to the home screen (with iPhone instructions), and reminds people to download a backup once they have notes worth keeping. Settings shows whether storage is protected.
 - **Feedback:** **Send feedback** (Today screen and Settings) lets people report a problem, share an idea or say thanks. It opens a prefilled GitHub issue with optional device details (never notes or prayers), or copies the text to send another way. Set `feedbackEmail` in `js/config.js` to also offer email.
 - **Fast on slow connections:** the first screen loads only the book it needs (about 120–170 KB) while the full translation loads in the background.
+- **One-tap updates:** the app checks for new versions when it opens, when you return to it, and hourly. When one is ready, a bar appears: tap **Update** and it reloads into the new version. Settings shows the version and has **Check for updates**. Each release is stamped automatically by the publish workflow.
 - **Private by design:** your data stays in your browser. Export and import a backup file to move it between devices.
 - **Works offline:** your current translation is cached on the device after the first visit. **Settings → Download everything** caches all translations, the original texts and the dictionary.
 - **Responsive layout:** bottom tabs on phones, wider card layouts on tablets, and top navigation with a comfortable reading width on desktop.

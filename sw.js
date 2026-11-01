@@ -1,5 +1,8 @@
 // Offline support: cache the app shell and Bible text, serve cache-first, refresh in the background.
-const CACHE = 'bible-app-v14';
+// VERSION is stamped by the publish workflow, so every release changes this file and the browser
+// notices the update. A new version waits until the reader taps "Update" (see js/app.js).
+const VERSION = 'dev';
+const CACHE = `bible-app-${VERSION}-v15`;
 const ASSETS = [
   './',
   'index.html',
@@ -30,6 +33,7 @@ const ASSETS = [
   'js/story-art.js',
   'data/kids-stories.json',
   'js/feedback.js',
+  'js/version.js',
   'js/config.js',
   'data/stories.json',
   'data/story-questions.json',
@@ -47,7 +51,12 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // First install: start right away. Later versions wait for the reader to choose "Update".
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => (self.registration.active ? undefined : self.skipWaiting())));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

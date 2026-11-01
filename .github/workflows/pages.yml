@@ -32,6 +32,12 @@ jobs:
         run: |
           mkdir _site
           cp -r index.html sw.js manifest.webmanifest css js data icons vendor _site/
+      - name: Stamp the release version (lets installed apps detect the update)
+        run: |
+          version="$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
+          sed -i "s/^const VERSION = 'dev';/const VERSION = '${version}';/" _site/sw.js
+          sed -i "s/^export const VERSION = 'dev';/export const VERSION = '${version}';/" _site/js/version.js
+          grep -q "${version}" _site/sw.js && grep -q "${version}" _site/js/version.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
